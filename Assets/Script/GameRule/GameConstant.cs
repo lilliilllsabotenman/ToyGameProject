@@ -54,3 +54,11 @@ public class GameConstantParametor
         return gameConstant.jumpForce;
     }
 }
+
+public class TestClass
+{
+}
+
+
+
+
