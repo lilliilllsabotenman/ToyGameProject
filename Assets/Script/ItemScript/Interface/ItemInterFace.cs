@@ -26,3 +26,8 @@ public interface IAbility
     public void SetActive();
     public void SetLevel(int level);
 }
+
+public interface IInteract
+{
+    public void Interract();
+}
