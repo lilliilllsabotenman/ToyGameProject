@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8aa176d690dc69b49bd9e093eda18ee5, type: 3}
+  m_Name: PlayerAnimationData
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationDataBase
+  animationData:
+  - animationType: 0
+    movementState:
+      movementState: 0
+      animationClip: {fileID: 7400000, guid: 3df84bec8e5cf6341bc37dd392961cb7, type: 2}
+    positioningState:
+      positioningState: 0
+      animationClip: {fileID: 0}
+    postureState:
+      postureState: 0
+      animationClip: {fileID: 7400000, guid: 014cb559796eb09479f1d23826be0ded, type: 2}
+    AnimationPriority: 0
+  - animationType: 2
+    movementState:
+      movementState: 1
+      animationClip: {fileID: 7400000, guid: a8b103988b11ae6419520b953ff99d31, type: 2}
+    positioningState:
+      positioningState: 0
+      animationClip: {fileID: 0}
+    postureState:
+      postureState: 1
+      animationClip: {fileID: 7400000, guid: 82ab187d38b91c84082dd6ecc3e7bc4d, type: 2}
+    AnimationPriority: 0
+  - animationType: 1
+    movementState:
+      movementState: 0
+      animationClip: {fileID: 5539831331247536789, guid: b1a796d3c57e3bd4a88432401b721b4d, type: 3}
+    positioningState:
+      positioningState: 1
+      animationClip: {fileID: 7400000, guid: 65365db1b51979049b972794c4cd8616, type: 2}
+    postureState:
+      postureState: 0
+      animationClip: {fileID: 7400000, guid: 014cb559796eb09479f1d23826be0ded, type: 2}
+    AnimationPriority: 0
+  - animationType: 0
+    movementState:
+      movementState: 0
+      animationClip: {fileID: 7574729295479277814, guid: b1a796d3c57e3bd4a88432401b721b4d, type: 3}
+    positioningState:
+      positioningState: 0
+      animationClip: {fileID: 0}
+    postureState:
+      postureState: 0
+      animationClip: {fileID: 7400000, guid: 014cb559796eb09479f1d23826be0ded, type: 2}
+    AnimationPriority: 0
+  - animationType: 1
+    movementState:
+      movementState: 0
+      animationClip: {fileID: 2667949614841947897, guid: b1a796d3c57e3bd4a88432401b721b4d, type: 3}
+    positioningState:
+      positioningState: 0
+      animationClip: {fileID: 7400000, guid: 0ea6957a3715e1b43b06f90c20368e29, type: 2}
+    postureState:
+      postureState: 0
+      animationClip: {fileID: 7400000, guid: 014cb559796eb09479f1d23826be0ded, type: 2}
+    AnimationPriority: 0
+  - animationType: 0
+    movementState:
+      movementState: 2
+      animationClip: {fileID: 7400000, guid: 8c9dc4559caa6dd4a9b4706345151fdc, type: 2}
+    positioningState:
+      positioningState: 0
+      animationClip: {fileID: 0}
+    postureState:
+      postureState: 0
+      animationClip: {fileID: 7400000, guid: 014cb559796eb09479f1d23826be0ded, type: 2}
+    AnimationPriority: 0
+  - animationType: 0
+    movementState:
+      movementState: 1
+      animationClip: {fileID: 7400000, guid: 79b897d5cc6e8ec4cadd21178cb3014e, type: 2}
+    positioningState:
+      positioningState: 0
+      animationClip: {fileID: 0}
+    postureState:
+      postureState: 0
+      animationClip: {fileID: 7400000, guid: 014cb559796eb09479f1d23826be0ded, type: 2}
+    AnimationPriority: 0
