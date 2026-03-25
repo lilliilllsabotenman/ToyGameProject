@@ -62,7 +62,7 @@ public class PlayerStateManager
 
     public void SetEvent(Action<PlayerStateData> AnimationChangeJudge)
     {
-        this.AnimationChangeJudge += AnimationChangeJudge;
+        // this.AnimationChangeJudge += AnimationChangeJudge;
     }
 
     public bool TryMovementStateChange(MovementState state, IStateJudge judgment)

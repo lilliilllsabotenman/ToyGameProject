@@ -81,7 +81,7 @@ public class PlayerController : MonoBehaviour
         groundCollisionLogic = new GroundCollisionLogic(playerStateManager,
                                                         groundLayer);
 
-
+        wallResolver = new WallCollisionResolver(wallMask);
         playerMoveAction = new PlayerMoveAction(this.GetComponent<Rigidbody>(), 
                                                 Camera.main.transform,
                                                 gameConstantParametor,
@@ -127,7 +127,6 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter (Collision collision)
     {
-        Debug.Log(groundCollisionLogic.CheckLanding(collision));
     } 
 
     private void OnCollisionStay (Collision collision)

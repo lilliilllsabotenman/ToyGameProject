@@ -29,5 +29,6 @@ public interface IAbility
 
 public interface IInteract
 {
+    public void Init(); 
     public void Interract();
 }
