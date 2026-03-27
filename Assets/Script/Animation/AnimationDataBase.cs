@@ -3,13 +3,21 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
+/// <summary>
+/// 条件付きフィールド
+/// use = true の場合のみこの条件が有効になる
+/// </summary>
 [System.Serializable]
 public class ConditionField<T> where T : Enum
 {
-    public bool use;   // ← この条件を使うか
-    public T value;    // ← 値
+    public bool use;
+    public T value;
 }
 
+/// <summary>
+/// アニメーション1件分の定義
+/// 「この状態のとき、このパラメータをONにする」
+/// </summary>
 [System.Serializable]
 public class AnimationData
 {
@@ -21,59 +29,34 @@ public class AnimationData
     public string AnimationParameter;
 }
 
+/// <summary>
+/// ScriptableObjectとしてデータを持つ
+/// AnimatorとAnimationData群をまとめる
+/// </summary>
 [CreateAssetMenu(menuName = "AnimationDataBase")]
 public class AnimationDataBase : ScriptableObject
 {
-    public Animator animator;
     public AnimationData[] animData;
 }
 
-public class AnimatonSorting
+/// <summary>
+/// Dictionaryキー
+/// 「どのState型の」「どの値か」を一意に識別する
+/// </summary>
+public struct StateKey : IEquatable<StateKey>
 {
-    private AnimationDataBase animDataBase;
+    public Type type;
+    public int value;
 
-    public AnimatonSorting(AnimationDataBase animDataBase)
+    public StateKey(Type type, int value)
     {
-        this.animDataBase = animDataBase;
+        this.type = type;
+        this.value = value;
     }
 
-    public void GetAnimationParameter(PlayerStateData state)
-    {
-        if(animDataBase.animData == null) return;
+    public bool Equals(StateKey other)
+        => type == other.type && value == other.value;
 
-        foreach (AnimationData data in animDataBase.animData)
-        {
-            if (data.moveState.use && data.moveState.value != state.movementState) 
-            {
-                StopAnimation(data.AnimationParameter);
-                continue;
-            }
-            if (data.positState.use && data.positState.value != state.positioningState)
-            {
-                StopAnimation(data.AnimationParameter);
-                continue;
-            }
-            if (data.postState.use && data.postState.value != state.postureState)
-            {
-                StopAnimation(data.AnimationParameter);
-                continue;
-            }
-            ViewAnimation(data.AnimationParameter);
-        }
-        return;
-    }
-
-    private void ViewAnimation(string param)
-    {
-        if(animDataBase.animator == null) return;
-
-        animDataBase.animator.SetBool(param, true);
-    }
-
-    private void StopAnimation(string param)
-    {
-        if(animDataBase.animator == null) return;
-
-        animDataBase.animator.SetBool(param, false);
-    }
+    public override int GetHashCode()
+        => HashCode.Combine(type, value);
 }

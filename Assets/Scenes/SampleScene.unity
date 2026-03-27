@@ -1166,7 +1166,7 @@ Transform:
   m_GameObject: {fileID: 700419937}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.0219197, y: 1.9012799, z: 9.95673}
+  m_LocalPosition: {x: -3.0219197, y: 1.9012799, z: 2.915}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1688,15 +1688,16 @@ MonoBehaviour:
     cam: {fileID: 330585545}
   keyBind: {fileID: 11400000, guid: e3684eb437981b84b92110e2d206f34e, type: 2}
   animationDataBase: {fileID: 11400000, guid: 334b61c4dd7c29c48bcd2be174bae093, type: 2}
+  animator: {fileID: 1215276381}
   wallMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundLayer:
     serializedVersion: 2
     m_Bits: 4294967295
   Constant:
     moveSpeed: 5
     jumpForce: 7
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!4 &1215276375 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: b1a796d3c57e3bd4a88432401b721b4d, type: 3}
