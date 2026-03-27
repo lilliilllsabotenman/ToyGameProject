@@ -22,6 +22,10 @@ public class PlayerController : MonoBehaviour
     [Header("壁の張り付き防止用レイヤーマスク")]
     [SerializeField] private LayerMask wallMask;
 
+    //↑の地面着地判定に使うレイヤーマスク
+    [Header("地面レイヤー")]
+    [SerializeField] private LayerMask groundLayer;
+
     //多くが参照する基礎パラメーター、プレイヤーごとに独立
     public GameConstant Constant;
     public ConstansModify constansModify = new ConstansModify();
@@ -33,17 +37,13 @@ public class PlayerController : MonoBehaviour
     //プレイヤーの状態を制御するクラス Script/GameOption/Gamerule.cs参照
     public PlayerStateData playerStateData = new PlayerStateData();
     public PlayerStateManager playerStateManager; // プレイヤーの状態制御
+    public StateWatcher stateWatcher; //状態変化を抽象化して通知
 
     //プレイヤーのデフォルト動作を規定したクラス、Script/Player/PlayerDefaultAction.cs参照
     private PlayerMoveAction playerMoveAction; 
     private GetItemAction getItemAction;
     private GroundCollisionLogic groundCollisionLogic;
     private WallCollisionResolver wallResolver;
-    
-    //↑の地面着地判定に使うレイヤーマスク
-    [Header("地面レイヤー")]
-    [SerializeField] private LayerMask groundLayer;
-    
 
     //キーバインド系のクラス全般　Script.GameOption.GameKyeBind.cs参照
     public PlayerInputIntent playerInput;//最終的な入力を抽象化して渡すクラス
@@ -58,8 +58,9 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
-        //状態機械初期化
-        playerStateManager = new PlayerStateManager(playerStateData);
+        //状態初期化
+        playerStateManager = new PlayerStateManager(playerStateData);//状態本体。
+        stateWatcher = new StateWatcher(playerStateManager);//状態を見張る人
 
         //キーバインド系の初期化全般
         keyBindData = new PlayerKeyBindData(defaultData.DefaultSettings(keyBind.Get()));
@@ -75,7 +76,7 @@ public class PlayerController : MonoBehaviour
 
         //プレイヤーアクション初期化
         
-        removeItem = new ItemRemover(this.transform);
+        removeItem = new ItemRemover(this.gameObject.transform);
         isItemData = new AbilityManager(removeItem);
         getItemAction = new GetItemAction(isItemData, playerInput);
         groundCollisionLogic = new GroundCollisionLogic(playerStateManager,
@@ -89,7 +90,6 @@ public class PlayerController : MonoBehaviour
                                                 wallResolver);
 
         animationSorting = new AnimatonSorting(animationDataBase);
-        playerStateManager.SetEvent(animationSorting.GetAnimationParameter);
     }
 
     private void Update()

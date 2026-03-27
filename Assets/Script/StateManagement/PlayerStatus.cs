@@ -52,61 +52,43 @@ public class PlayerStateData
 
 public class PlayerStateManager
 {
-    public PlayerStateData stateData {get; private set;}
-    public event Action<PlayerStateData> AnimationChangeJudge;
+    public PlayerStateData stateData { get; private set; }
+
+    // 中立イベント（意味を持たない）
+    public event Action<PlayerStateData> OnStateChanged;
 
     public PlayerStateManager(PlayerStateData stateData)
     {
         this.stateData = stateData;
     }
 
-    public void SetEvent(Action<PlayerStateData> AnimationChangeJudge)
-    {
-        // this.AnimationChangeJudge += AnimationChangeJudge;
-    }
-
     public bool TryMovementStateChange(MovementState state, IStateJudge judgment)
     {
-        if(judgment.StateJudgment(stateData))
-        {
-            if(stateData.movementState == state) return false;
+        if (!judgment.StateJudgment(stateData)) return false;
+        if (stateData.movementState == state) return false;
 
-            stateData.SetMovementState(state);
-
-            AnimationChangeJudge?.Invoke(stateData);
-            return true;
-        }
-
-        return false;
+        stateData.SetMovementState(state);
+        OnStateChanged?.Invoke(stateData);
+        return true;
     }
 
     public bool TryPositioningStateChange(PositioningState state, IStateJudge judgment)
     {
-        if(judgment.StateJudgment(stateData))
-        {
-            if(stateData.positioningState == state) return false;
+        if (!judgment.StateJudgment(stateData)) return false;
+        if (stateData.positioningState == state) return false;
 
-            stateData.SetPostioningState(state);  
-
-            AnimationChangeJudge?.Invoke(stateData);  
-            return true;
-        }
-
-        return false;
+        stateData.SetPostioningState(state);
+        OnStateChanged?.Invoke(stateData);
+        return true;
     }
 
     public bool TryPostureStateChange(PostureState state, IStateJudge judgment)
     {
-        if(judgment.StateJudgment(stateData))
-        {
-            if(stateData.postureState == state) return false;
+        if (!judgment.StateJudgment(stateData)) return false;
+        if (stateData.postureState == state) return false;
 
-            stateData.SetPostureState(state);
-
-            AnimationChangeJudge?.Invoke(stateData);
-            return true;
-        }
-
-        return false;
+        stateData.SetPostureState(state);
+        OnStateChanged?.Invoke(stateData);
+        return true;
     }
 }
