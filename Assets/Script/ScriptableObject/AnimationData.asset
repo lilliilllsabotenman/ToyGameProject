@@ -12,5 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8aa176d690dc69b49bd9e093eda18ee5, type: 3}
   m_Name: AnimationData
   m_EditorClassIdentifier: Assembly-CSharp::AnimationDataBase
-  animator: {fileID: 0}
-  animData: []
+  animData:
+  - moveState:
+      use: 0
+      value: 0
+    positState:
+      use: 0
+      value: 0
+    postState:
+      use: 1
+      value: 1
+    AnimationParameter: Crouch

@@ -21,12 +21,13 @@ public class StateWatcher
     public StateWatcher(PlayerStateManager manager)
     {
         manager.OnStateChanged += StateChanged;
+        _events = new Dictionary<Type, Delegate>();
     }
 
     /// <summary>
     /// ジェネリックでイベント登録
     /// </summary>
-    public void ChangeStateEvent<T>(Action<T> action) where T : Enum
+    public void Subscribe<T>(Action<T> action) where T : Enum
     {
         Type t = typeof(T);
 

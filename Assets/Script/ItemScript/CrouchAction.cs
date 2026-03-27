@@ -73,8 +73,6 @@ public class CrouchComponent : OnFixedUpdateAbility, IAbility
 
     public void OnFixedUpdate()
     {
-
-
         if(isSituation == AbilitySituation.Pasiv)return;
         if(inputIntent.IsPressed(iAction))//この中でSwitch分けちゃっていいと思う。
         {
@@ -87,8 +85,6 @@ public class CrouchComponent : OnFixedUpdateAbility, IAbility
 
         if(playerState.stateData.postureState == PostureState.Crouch)
         {
-            Debug.Log(level);
-
             switch (level)
             {
                 case 1: crouchBehaviour.CrouchAction_lv1(); break;

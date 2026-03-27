@@ -35,8 +35,6 @@ public class UI_NavigationController : MonoBehaviour
         // 安全チェック
         if (target == null || ui == null || cam == null) return;
 
-        Debug.Log("this is not Null");
-
         // --- 1) ワールド → スクリーン座標に変換 ---
         Vector3 sp = cam.WorldToScreenPoint(target.position);
 

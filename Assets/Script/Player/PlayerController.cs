@@ -17,6 +17,8 @@ public class PlayerController : MonoBehaviour
     [Header("アニメーション関連設定")]
     [Header("アニメーションデータベース")]
     [SerializeField] private AnimationDataBase animationDataBase;
+    [Header("Animator")]
+    [SerializeField] private Animator animator;
     
 
     [Header("壁の張り付き防止用レイヤーマスク")]
@@ -52,7 +54,7 @@ public class PlayerController : MonoBehaviour
     private PlayerInputBuffer playerInputBuffer;      
 
     //アニメーション系
-    private AnimatonSorting animationSorting;
+    private AnimationSystem animationSystem;
 
     private DefaultKeyBindData defaultData = new DefaultKeyBindData();
 
@@ -89,7 +91,9 @@ public class PlayerController : MonoBehaviour
                                                 playerStateManager,
                                                 wallResolver);
 
-        animationSorting = new AnimatonSorting(animationDataBase);
+        animationSystem = new AnimationSystem(animationDataBase, animator);
+
+        animationSystem.Bind(stateWatcher);
     }
 
     private void Update()
