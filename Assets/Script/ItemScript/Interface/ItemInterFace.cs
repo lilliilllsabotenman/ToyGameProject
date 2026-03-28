@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public enum AbilitySituation
 {
@@ -6,9 +7,13 @@ public enum AbilitySituation
     Pasiv
 }
 
-public interface OnUpdateAbility
+public interface OnPlayerAction
 {
-    public void OnUpdate();
+    ActionType ActionType { get; }
+
+    // 「Abilityを直接実行しない」こと
+    // ここで返すのは Modifier適用など
+    Action GetAction();
 }
 
 public interface OnFixedUpdateAbility
