@@ -14,6 +14,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::AnimationDataBase
   animData:
   - moveState:
+      use: 1
+      value: 1
+    positState:
+      use: 0
+      value: 0
+    postState:
+      use: 1
+      value: 1
+    AnimationParameter: walk
+  - moveState:
+      use: 1
+      value: 0
+    positState:
+      use: 0
+      value: 0
+    postState:
+      use: 1
+      value: 1
+    AnimationParameter: idle
+  - moveState:
       use: 0
       value: 0
     positState:
@@ -23,3 +43,43 @@ MonoBehaviour:
       use: 1
       value: 1
     AnimationParameter: Crouch
+  - moveState:
+      use: 1
+      value: 2
+    positState:
+      use: 0
+      value: 0
+    postState:
+      use: 1
+      value: 1
+    AnimationParameter: Dash
+  - moveState:
+      use: 0
+      value: 0
+    positState:
+      use: 1
+      value: 1
+    postState:
+      use: 0
+      value: 1
+    AnimationParameter: Jump
+  - moveState:
+      use: 0
+      value: 0
+    positState:
+      use: 1
+      value: 0
+    postState:
+      use: 0
+      value: 1
+    AnimationParameter: JumpFinish
+  - moveState:
+      use: 0
+      value: 0
+    positState:
+      use: 0
+      value: 0
+    postState:
+      use: 1
+      value: 0
+    AnimationParameter: GetAction
