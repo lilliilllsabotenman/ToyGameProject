@@ -2,101 +2,50 @@ using UnityEngine;
 
 public class CrouchAction : ItemObjectBehaviour
 {
-    public ItemType iType;
+    // public ItemType iType;
 
-    private void Awake ()
-    {
-        rb = this.GetComponent<Rigidbody>();
-    }
+    // private void Awake ()
+    // {
+    //     rb = this.GetComponent<Rigidbody>();
+    // }
 
-    public override AbilityItemSlot GetAbility(GameObject player)
-    {
-        PlayerController playerComtroller = player.GetComponent<PlayerController>();
-        Collider playerCollider = playerComtroller.gameObject.GetComponent<Collider>();
-        CrouchComponent crouchComponent = new CrouchComponent(        
-            playerComtroller.playerInput,
-            playerCollider,
-            playerComtroller.playerStateManager,
-            player.GetComponent<BoxCollider>(),
-            iAction
-        );
+    // public override AbilityItemSlot GetAbility(GameObject player)
+    // {
+    //     PlayerController playerComtroller = player.GetComponent<PlayerController>();
+    //     Collider playerCollider = playerComtroller.gameObject.GetComponent<Collider>();
+    //     CrouchComponent crouchComponent = new CrouchComponent(        
+    //         playerComtroller.playerInput,
+    //         playerCollider,
+    //         playerComtroller.playerStateManager,
+    //         player.GetComponent<BoxCollider>(),
+    //         iAction
+    //     );
 
-        AbilityItemSlot ability = new AbilityItemSlot(
-            this,
-            crouchComponent,
-            this.iType
-        );
+    //     AbilityItemSlot ability = new AbilityItemSlot(
+    //         this,
+    //         crouchComponent,
+    //         this.iType
+    //     );
 
-        return ability;
-    }
+    //     return ability;
+    // }
 }
 
-public class CrouchComponent : OnFixedUpdateAbility, IAbility
+public class CrouchComponent : IAbility
 {
-    private AbilitySituation isSituation = AbilitySituation.Pasiv; 
-    
-    private ActionType iAction; 
-    private PlayerInputIntent inputIntent;
-    private Collider playerCollider;
-    private PlayerStateManager playerState;
-    private CrouchBehaviour crouchBehaviour;
-
-    private int level = 1;
-    private float ObjectScale_Y;
-
-    private CorouchStateJudgment CorouchStateJudgment = new CorouchStateJudgment();
-    private UprightStateJudgment uprightStateJudgment = new UprightStateJudgment();
-
-    public CrouchComponent( PlayerInputIntent inputIntent, 
-                            Collider playerCollider,
-                            PlayerStateManager playerState,
-                            BoxCollider col,
-                            ActionType iAction)
-    {
-        this.inputIntent = inputIntent;
-        this.playerCollider = playerCollider;
-        this.playerState = playerState;
-        this.iAction = iAction;
-
-        crouchBehaviour = new CrouchBehaviour(col);
-    }
-
-    public void SetLevel(int level)
-    {
-        this.level = level;
-    }
-
     public void SetActive()
     {
-        isSituation = AbilitySituation.Active;
+        
     }
 
-    public void OnFixedUpdate()
+    public IStateJudge ActionModifyPress()
     {
-        if(isSituation == AbilitySituation.Pasiv)return;
-        if(inputIntent.IsPressed(iAction))//この中でSwitch分けちゃっていいと思う。
-        {
-            playerState.TryPostureStateChange(PostureState.Crouch, CorouchStateJudgment);
-        }
-        if(inputIntent.IsReleased(iAction)) 
-        {
-            playerState.TryPostureStateChange(PostureState.Upright, uprightStateJudgment);
-        }
+        return null;
+    }
 
-        if(playerState.stateData.postureState == PostureState.Crouch)
-        {
-            switch (level)
-            {
-                case 1: crouchBehaviour.CrouchAction_lv1(); break;
-                case 2: crouchBehaviour.CrouchAction_lv2(); break;
-                case 3: crouchBehaviour.CrouchAction_lv3(); break;
-            }
-        }
-
-        if(playerState.stateData.postureState == PostureState.Upright)
-        {
-            crouchBehaviour.ReleasedCollider();
-        }
+    public IStateJudge ActionModifyReleased()
+    {
+        return null;
     }
 }
 

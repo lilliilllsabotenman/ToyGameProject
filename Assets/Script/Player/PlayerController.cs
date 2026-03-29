@@ -29,6 +29,9 @@ public class PlayerController : MonoBehaviour
     [Header("地面レイヤー")]
     [SerializeField] private LayerMask groundLayer;
 
+    //Modifire系
+    private VelocityUtil velocityUtil;
+
     //多くが参照する基礎パラメーター、プレイヤーごとに独立
     public GameConstant Constant;
     public ConstansModify constansModify = new ConstansModify();

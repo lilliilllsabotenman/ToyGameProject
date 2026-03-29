@@ -154,7 +154,7 @@ public class AbilityActivator
 
         foreach (var s in abilitiesByType[type])
         {
-            s.Ability.SetLevel(count);
+            // s.Ability.SetLevel(count);
 
             if (s.Ability is OnPlayerAction a)
                 registerAction(a);
@@ -185,7 +185,7 @@ public class AbilityActivator
         {
             foreach (var s in abilitiesByType[type])
             {
-                s.Ability.SetLevel(count);
+                // s.Ability.SetLevel(count);
             }
         }
 

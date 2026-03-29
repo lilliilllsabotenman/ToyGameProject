@@ -67,7 +67,7 @@ public class AnimationExecutor
     private readonly Dictionary<StateKey, List<AnimationData>> map;
 
     // 全パラメータ管理（排他制御用）
-    private readonly HashSet<string> allParams = new();
+    Dictionary<Type, HashSet<string>> paramsByType = new();
 
     public AnimationExecutor(
         Animator animator,
@@ -90,11 +90,16 @@ public class AnimationExecutor
     // -------------------------
     private void CollectAllParams()
     {
-        foreach (var list in map.Values)
+        foreach (var pair in map)
         {
-            foreach (var data in list)
+            var type = pair.Key.type;
+
+            if (!paramsByType.ContainsKey(type))
+                paramsByType[type] = new HashSet<string>();
+
+            foreach (var data in pair.Value)
             {
-                allParams.Add(data.AnimationParameter);
+                paramsByType[type].Add(data.AnimationParameter);
             }
         }
     }
@@ -104,10 +109,13 @@ public class AnimationExecutor
     // -------------------------
     public void Execute(Type type, int value)
     {
-        // ① 全OFF（状態リセット）
-        foreach (var param in allParams)
+        // ① そのTypeだけOFF
+        if (paramsByType.TryGetValue(type, out var paramsSet))
         {
-            animator.SetBool(param, false);
+            foreach (var param in paramsSet)
+            {
+                animator.SetBool(param, false);
+            }
         }
 
         // ② 該当だけON
@@ -177,3 +185,15 @@ public class AnimationSystem
         => executor.Execute(typeof(PostureState), Convert.ToInt32(state));
     #endregion
 }
+
+// //選別クラス
+// {
+//     //主体関数(AniamtionParametor)
+//     {
+//         if(GetType(AnimationParametor) == typeof(float))
+//             //モディファイア管理ぶち込み
+//         else if(/*Bool の場合*/)
+//             //今まで通りExcuteぶち込み
+//     }
+// }
+

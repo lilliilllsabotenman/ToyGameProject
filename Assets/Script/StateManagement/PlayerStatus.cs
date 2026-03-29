@@ -23,11 +23,6 @@ public enum PositioningState
     Clip
 }
 
-public interface IStateJudge
-{
-    public bool StateJudgment(PlayerStateData state);
-}
-
 public class PlayerStateData
 {
     public MovementState movementState { get; private set;}

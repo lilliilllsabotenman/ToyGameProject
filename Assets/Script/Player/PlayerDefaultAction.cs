@@ -253,3 +253,34 @@ public class GetItemAction
     }
 }
 
+public class VelocityUtil
+{
+    public FloatWrapper speed = new();
+    public Rigidbody rigidBody;
+    public AnimationModifireType type = AnimationModifireType.speed;
+
+    public VelocityUtil(
+            Rigidbody rigidBody,
+            AnimationModifire animationModifire)
+    {
+        this.rigidBody = rigidBody;
+        animationModifire.AddModifire(type, speed);
+    }
+
+    public void MoveDriver(float maxSpeed)
+    {
+        Vector3 v = rigidBody.linearVelocity;
+        v.y = 0f;
+
+        float speed = v.magnitude;
+
+        // デッドゾーン
+        if (speed < 0.01f)
+            speed = 0f;
+
+        float normalized = Mathf.Clamp01(speed / maxSpeed);
+
+        // スムージング
+        this.speed.value = Mathf.Lerp(this.speed.value, normalized, Time.deltaTime * 10f);
+    }
+}
