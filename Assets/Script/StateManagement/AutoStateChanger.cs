@@ -31,7 +31,7 @@ public class GroundCollisionLogic
 }
 
 
-public class GroundStateJudgment : IStateJudge
+public class GroundStateJudgment : StateChangeModifire
 {
     public bool StateJudgment(PlayerStateData state)
     {

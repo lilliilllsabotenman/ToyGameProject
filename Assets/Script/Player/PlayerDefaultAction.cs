@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class MoveStateJudgment : IStateJudge
+public class MoveStateJudgment : StateChangeModifire
 {
     public bool StateJudgment(PlayerStateData data)
     {
@@ -12,7 +12,7 @@ public class MoveStateJudgment : IStateJudge
     }
 }
 
-public class StandStateJudgment : IStateJudge
+public class StandStateJudgment : StateChangeModifire
 {
     public bool StateJudgment(PlayerStateData data)
     {

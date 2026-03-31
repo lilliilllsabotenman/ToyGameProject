@@ -57,7 +57,7 @@ public class PlayerStateManager
         this.stateData = stateData;
     }
 
-    public bool TryMovementStateChange(MovementState state, IStateJudge judgment)
+    public bool TryMovementStateChange(MovementState state, StateChangeModifire judgment)
     {
         if (!judgment.StateJudgment(stateData)) return false;
         if (stateData.movementState == state) return false;
@@ -67,7 +67,7 @@ public class PlayerStateManager
         return true;
     }
 
-    public bool TryPositioningStateChange(PositioningState state, IStateJudge judgment)
+    public bool TryPositioningStateChange(PositioningState state, StateChangeModifire judgment)
     {
         if (!judgment.StateJudgment(stateData)) return false;
         if (stateData.positioningState == state) return false;
@@ -77,7 +77,7 @@ public class PlayerStateManager
         return true;
     }
 
-    public bool TryPostureStateChange(PostureState state, IStateJudge judgment)
+    public bool TryPostureStateChange(PostureState state, StateChangeModifire judgment)
     {
         if (!judgment.StateJudgment(stateData)) return false;
         if (stateData.postureState == state) return false;

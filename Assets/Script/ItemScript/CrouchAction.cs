@@ -33,17 +33,25 @@ public class CrouchAction : ItemObjectBehaviour
 
 public class CrouchComponent : IAbility
 {
-    public void SetActive()
+    private ActionType actionType;
+    private ItemType itemType;
+
+    public ItemType GetItemType()
     {
-        
+        return itemType;
     }
 
-    public IStateJudge ActionModifyPress()
+    public ActionType GetActionType()
+    {
+        return this.actionType;
+    }
+
+    public StateChangeModifire ActionModifyPress()
     {
         return null;
     }
 
-    public IStateJudge ActionModifyReleased()
+    public StateChangeModifire ActionModifyReleased()
     {
         return null;
     }
@@ -124,7 +132,7 @@ public class CrouchBehaviour
     }
 }
 
-public class UprightStateJudgment : IStateJudge
+public class UprightStateJudgment : StateChangeModifire
 {
     public bool StateJudgment(PlayerStateData state)
     {
@@ -132,7 +140,7 @@ public class UprightStateJudgment : IStateJudge
     }
 }
 
-public class CorouchStateJudgment : IStateJudge
+public class CorouchStateJudgment : StateChangeModifire
 {
     public bool StateJudgment(PlayerStateData state)
     {

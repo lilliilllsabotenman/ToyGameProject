@@ -16,16 +16,16 @@ public class AbilityItemSlot
     public IAbility Ability;
     public ItemType itemType;
 
-    public AbilityItemSlot(ItemObjectBehaviour ItemObject, IAbility Ability, ItemType itemType)
+    public AbilityItemSlot(ItemObjectBehaviour itemObject, IAbility ability, ItemType itemType)
     {
-        this.ItemObject = ItemObject;
-        this.Ability = Ability;
+        this.ItemObject = itemObject;
+        this.Ability = ability;
         this.itemType = itemType;
     }
 }
 
 /// <summary>
-/// アビリティ管理クラス（接続ハブ）
+/// アビリティ管理クラス（所持・構成管理のみ）
 /// </summary>
 public class AbilityManager
 {
@@ -34,24 +34,15 @@ public class AbilityManager
     private ItemRemover removeItem;
     private AbilityActivator abilityActivator;
 
-    private InputWatcher inputWatcher;
-
-    public List<OnEventAbility> EventAbilities = new();
-    public List<OnFixedUpdateAbility> FixedUpdateAbilities = new();
-
     public AbilityManager(
         ItemRemover removeItem,
         InputWatcher inputWatcher)
     {
         this.removeItem = removeItem;
-        this.inputWatcher = inputWatcher;
 
         this.abilityActivator = new AbilityActivator(
             MasterAbilities,
-            EventAbilities,
-            FixedUpdateAbilities,
-            RegisterPlayerAction,
-            UnregisterPlayerAction
+            inputWatcher
         );
     }
 
@@ -61,8 +52,6 @@ public class AbilityManager
         {
             RemoveItem(old);
         }
-
-        slot.Ability.SetActive();
 
         MasterAbilities[slot.itemType] = slot;
 
@@ -79,50 +68,89 @@ public class AbilityManager
 
         removeItem.Remove(slot);
     }
-
-    // ===== Input接続 =====
-
-    private void RegisterPlayerAction(OnPlayerAction a)
-    {
-        var action = a.GetAction();
-        inputWatcher.BindPressed(a.ActionType, action);
-    }
-
-    private void UnregisterPlayerAction(OnPlayerAction a)
-    {
-        var action = a.GetAction();
-        inputWatcher.UnbindPressed(a.ActionType, action);
-    }
-
 }
 
+/// <summary>
+/// アビリティの有効化・接続ハブ（責務集約）
+/// — Input / Event / Update を一括管理
+/// </summary>
 public class AbilityActivator
 {
     private readonly Dictionary<ItemType, AbilityItemSlot> masterAbilities;
-    private readonly List<OnEventAbility> eventAbilities;
-    private readonly List<OnFixedUpdateAbility> fixedUpdateAbilities;
+    private readonly InputWatcher inputWatcher;
 
-    private readonly Action<OnPlayerAction> registerAction;
-    private readonly Action<OnPlayerAction> unregisterAction;
+    private readonly List<OnEventAbility> eventAbilities = new();
+    private readonly List<OnFixedUpdateAbility> fixedUpdateAbilities = new();
 
     private Dictionary<Type, List<AbilityItemSlot>> abilitiesByType = new();
 
     public AbilityActivator(
         Dictionary<ItemType, AbilityItemSlot> masterAbilities,
-        List<OnEventAbility> eventAbilities,
-        List<OnFixedUpdateAbility> fixedUpdateAbilities,
-        Action<OnPlayerAction> registerAction,
-        Action<OnPlayerAction> unregisterAction
+        InputWatcher inputWatcher
     )
     {
         this.masterAbilities = masterAbilities;
-        this.eventAbilities = eventAbilities;
-        this.fixedUpdateAbilities = fixedUpdateAbilities;
-        this.registerAction = registerAction;
-        this.unregisterAction = unregisterAction;
+        this.inputWatcher = inputWatcher;
     }
 
-    public void AbilityAssignment()
+    // ===== 公開API =====
+
+    public IReadOnlyList<OnEventAbility> EventAbilities => eventAbilities;
+    public IReadOnlyList<OnFixedUpdateAbility> FixedUpdateAbilities => fixedUpdateAbilities;
+
+    public void SetLevel(AbilityItemSlot slot)
+    {
+        Type type = slot.Ability.GetType();
+
+        if (!abilitiesByType.ContainsKey(type))
+            abilitiesByType[type] = new List<AbilityItemSlot>();
+
+        abilitiesByType[type].Add(slot);
+
+        // 新規追加分のみ登録（重要）
+        Register(slot.Ability);
+
+        RebuildExecutionLists();
+    }
+
+    public void DeleteItemLevel(AbilityItemSlot slot)
+    {
+        Type type = slot.Ability.GetType();
+
+        if (!abilitiesByType.ContainsKey(type))
+            return;
+
+        abilitiesByType[type].Remove(slot);
+
+        Unregister(slot.Ability);
+
+        if (abilitiesByType[type].Count == 0)
+            abilitiesByType.Remove(type);
+
+        RebuildExecutionLists();
+    }
+
+    // ===== 内部処理 =====
+
+    private void Register(IAbility ability)
+    {
+        var actionType = ability.GetActionType();
+
+        inputWatcher.BindPressed(actionType, ability);
+        inputWatcher.BindReleased(actionType, ability);
+        inputWatcher.BindHeld(actionType, ability);
+    }
+
+    private void Unregister(IAbility ability)
+    {
+        var actionType = ability.GetActionType();
+
+        inputWatcher.UnbindPressed(actionType);
+        inputWatcher.UnbindReleased(actionType);
+        inputWatcher.UnbindHeld(actionType);
+    }
+
+    private void RebuildExecutionLists()
     {
         eventAbilities.Clear();
         fixedUpdateAbilities.Clear();
@@ -138,72 +166,22 @@ public class AbilityActivator
                 fixedUpdateAbilities.Add(f);
         }
     }
-
-    public void SetLevel(AbilityItemSlot slot)
-    {
-        Type type = slot.Ability.GetType();
-
-        if (!abilitiesByType.ContainsKey(type))
-        {
-            abilitiesByType[type] = new List<AbilityItemSlot>();
-        }
-
-        abilitiesByType[type].Add(slot);
-
-        int count = abilitiesByType[type].Count;
-
-        foreach (var s in abilitiesByType[type])
-        {
-            // s.Ability.SetLevel(count);
-
-            if (s.Ability is OnPlayerAction a)
-                registerAction(a);
-        }
-
-        AbilityAssignment();
-    }
-
-    public void DeleteItemLevel(AbilityItemSlot slot)
-    {
-        Type type = slot.Ability.GetType();
-
-        if (!abilitiesByType.ContainsKey(type))
-            return;
-
-        abilitiesByType[type].Remove(slot);
-
-        if (slot.Ability is OnPlayerAction a)
-            unregisterAction(a);
-
-        int count = abilitiesByType[type].Count;
-
-        if (count == 0)
-        {
-            abilitiesByType.Remove(type);
-        }
-        else
-        {
-            foreach (var s in abilitiesByType[type])
-            {
-                // s.Ability.SetLevel(count);
-            }
-        }
-
-        AbilityAssignment();
-    }
 }
 
+/// <summary>
+/// アイテム削除処理
+/// </summary>
 public class ItemRemover
 {
     private Transform tf;
 
-    public void Remove(AbilityItemSlot iAbilitySlot)
-    {
-        iAbilitySlot.ItemObject.Restoration(tf.position);
-    }
-
     public ItemRemover(Transform tf)
     {
         this.tf = tf;
+    }
+
+    public void Remove(AbilityItemSlot slot)
+    {
+        slot.ItemObject.Restoration(tf.position);
     }
 }

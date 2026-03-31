@@ -7,7 +7,7 @@ public enum AbilitySituation
     Pasiv
 }
 
-public interface IStateJudge
+public interface StateChangeModifire
 {
     public bool StateJudgment(PlayerStateData state);
 }
@@ -33,9 +33,10 @@ public interface OnEventAbility
 
 public interface IAbility
 { 
-    public void SetActive();
-    public IStateJudge ActionModifyPress();
-    public IStateJudge ActionModifyReleased();
+    public ActionType GetActionType();
+    public ItemType GetItemType();
+    public StateChangeModifire ActionModifyPress();
+    public StateChangeModifire ActionModifyReleased();
 }
 
 public interface IInteract

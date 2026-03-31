@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-#region PlayerController
+
 /// <summary>
 /// プレイヤーに関する動作の実行を管轄する基幹クラス
 /// できればこいつ以外にMonoBehaviourはあまり生やしたくない
@@ -112,22 +112,11 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        foreach(OnFixedUpdateAbility Ability in isItemData.FixedUpdateAbilities)
-        {
-            //詳細はAbilitymana.cs参照
-            Ability.OnFixedUpdate();//AbilityManagerよりそれぞれのライフサイクルごとに分けられたものを実行
-        }
-
         playerMoveAction.PlayerMoving();
     }
 
     private void iEvent()
     {
-        foreach(OnEventAbility Ability in isItemData.EventAbilities)
-        {
-            //詳細はAbilitymana.cs参照
-            Ability.OnEvent();//AbilityManagerよりそれぞれのライフサイクルごとに分けられたものを実行
-        }
     }
 
     private void OnCollisionEnter (Collision collision)
@@ -144,118 +133,3 @@ public class PlayerController : MonoBehaviour
         wallResolver.Clear();
     }
 }
-#endregion
-
-
-#region InputWatcher
-public class InputWatcher
-{
-    private readonly PlayerInputIntent intent;
-
-    private readonly Dictionary<ActionType, Action> onPressed = new();
-    private readonly Dictionary<ActionType, Action> onReleased = new();
-    private readonly Dictionary<ActionType, Action> onHeld = new();
-
-    public InputWatcher(PlayerInputIntent intent)
-    {
-        this.intent = intent;
-    }
-
-    // ===== 登録 =====
-
-    public void BindPressed(ActionType type, Action action)//押したら
-    {
-        if (onPressed.ContainsKey(type))
-            onPressed[type] += action;
-        else
-            onPressed[type] = action;
-    }
-
-    public void BindReleased(ActionType type, Action action)//離したら
-    {
-        if (onReleased.ContainsKey(type))
-            onReleased[type] += action;
-        else
-            onReleased[type] = action;
-    }
-
-    public void BindHeld(ActionType type, Action action)//押し続けたら
-    {
-        if (onHeld.ContainsKey(type))
-            onHeld[type] += action;
-        else
-            onHeld[type] = action;
-    }
-
-    // ===== 解除（個別） =====
-
-    public void UnbindPressed(ActionType type, Action action)
-    {
-        if (onPressed.TryGetValue(type, out var del))
-        {
-            del -= action;
-            if (del == null) onPressed.Remove(type);
-            else onPressed[type] = del;
-        }
-    }
-
-    public void UnbindReleased(ActionType type, Action action)
-    {
-        if (onReleased.TryGetValue(type, out var del))
-        {
-            del -= action;
-            if (del == null) onReleased.Remove(type);
-            else onReleased[type] = del;
-        }
-    }
-
-    public void UnbindHeld(ActionType type, Action action)
-    {
-        if (onHeld.TryGetValue(type, out var del))
-        {
-            del -= action;
-            if (del == null) onHeld.Remove(type);
-            else onHeld[type] = del;
-        }
-    }
-
-    // ===== 全解除 =====
-
-    public void Clear(ActionType type)
-    {
-        onPressed.Remove(type);
-        onReleased.Remove(type);
-        onHeld.Remove(type);
-    }
-
-    public void ClearAll()
-    {
-        onPressed.Clear();
-        onReleased.Clear();
-        onHeld.Clear();
-    }
-
-    // ===== 実行 =====
-
-    public void Update()
-    {
-        foreach (var pair in onPressed)
-        {
-            if (intent.IsPressed(pair.Key))
-                pair.Value?.Invoke();
-        }
-
-        foreach (var pair in onReleased)
-        {
-            if (intent.IsReleased(pair.Key))
-                pair.Value?.Invoke();
-        }
-
-        foreach (var pair in onHeld)
-        {
-            if (intent.IsHeld(pair.Key))
-                pair.Value?.Invoke();
-        }
-    }
-}
-#endregion
