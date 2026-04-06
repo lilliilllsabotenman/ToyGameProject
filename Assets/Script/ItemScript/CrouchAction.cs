@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public class CrouchAction : ItemObjectBehaviour
 {
@@ -46,14 +47,14 @@ public class CrouchComponent : IAbility
         return this.actionType;
     }
 
-    public StateChangeModifire ActionModifyPress()
+    public Enum ActionModifyPress()
     {
-        return null;
+        return PostureState.Crouch;
     }
 
-    public StateChangeModifire ActionModifyReleased()
+    public Enum ActionModifyReleased()
     {
-        return null;
+        return PostureState.Upright;
     }
 }
 
@@ -129,23 +130,5 @@ public class CrouchBehaviour
         center.y = defaultCenter.y - offset;
 
         col.center = center;
-    }
-}
-
-public class UprightStateJudgment : StateChangeModifire
-{
-    public bool StateJudgment(PlayerStateData state)
-    {
-        return true;
-    }
-}
-
-public class CorouchStateJudgment : StateChangeModifire
-{
-    public bool StateJudgment(PlayerStateData state)
-    {
-        if(state.positioningState != PositioningState.Clip) return true;
-
-        else return false;
     }
 }

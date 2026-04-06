@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 using System;
 
 public enum MovementState
@@ -49,41 +50,55 @@ public class PlayerStateManager
 {
     public PlayerStateData stateData { get; private set; }
 
-    // 中立イベント（意味を持たない）
+    private Dictionary<Type, Func<Enum, bool>> stateChanged;
+
     public event Action<PlayerStateData> OnStateChanged;
 
     public PlayerStateManager(PlayerStateData stateData)
     {
         this.stateData = stateData;
+
+        stateChanged = new Dictionary<Type, Func<Enum, bool>>
+        {
+            { typeof(MovementState), e => movementChanged((MovementState)e) },
+            { typeof(PositioningState), e => positioningChanged((PositioningState)e) },
+            { typeof(PostureState), e => postureChanged((PostureState)e) },
+        };
     }
 
-    public bool TryMovementStateChange(MovementState state, StateChangeModifire judgment)
+    public bool TryChangeState(Enum newState)
     {
-        if (!judgment.StateJudgment(stateData)) return false;
-        if (stateData.movementState == state) return false;
+        Type type = newState.GetType();
 
-        stateData.SetMovementState(state);
-        OnStateChanged?.Invoke(stateData);
+        if (!stateChanged.TryGetValue(type, out var handler))
+        {
+            Debug.LogError($"Unsupported state type: {type}");
+            return false;
+        }
+
+        bool result = handler(newState);
+
+        if (result)
+            OnStateChanged?.Invoke(stateData);
+
+        return result;
+    }
+
+    public bool movementChanged(MovementState state)
+    {
+        // 処理
         return true;
     }
 
-    public bool TryPositioningStateChange(PositioningState state, StateChangeModifire judgment)
+    public bool positioningChanged(PositioningState state)
     {
-        if (!judgment.StateJudgment(stateData)) return false;
-        if (stateData.positioningState == state) return false;
-
-        stateData.SetPostioningState(state);
-        OnStateChanged?.Invoke(stateData);
+        // 処理
         return true;
     }
 
-    public bool TryPostureStateChange(PostureState state, StateChangeModifire judgment)
+    public bool postureChanged(PostureState state)
     {
-        if (!judgment.StateJudgment(stateData)) return false;
-        if (stateData.postureState == state) return false;
-
-        stateData.SetPostureState(state);
-        OnStateChanged?.Invoke(stateData);
+        // 処理
         return true;
     }
 }

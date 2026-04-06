@@ -1,7 +1,4 @@
 using UnityEngine;
-using System;
-using System.Collections.Generic;
-
 
 /// <summary>
 /// プレイヤーに関する動作の実行を管轄する基幹クラス
@@ -39,7 +36,6 @@ public class PlayerController : MonoBehaviour
 
     public AbilityManager isItemData;
     private ItemRemover removeItem;
-    private InputWatcher inputWatcher;
 
     //プレイヤーの状態を制御するクラス Script/GameOption/Gamerule.cs参照
     public PlayerStateData playerStateData = new PlayerStateData();
@@ -58,6 +54,9 @@ public class PlayerController : MonoBehaviour
     private PlayerInputInterpreter playerInputInterpreter;
     private PlayerInputBuffer playerInputBuffer;      
 
+    private InputWatcher inputWatcher;
+    private InputResolver resolver;
+
     //アニメーション系
     private AnimationSystem animationSystem;
 
@@ -74,20 +73,16 @@ public class PlayerController : MonoBehaviour
         playerInputInterpreter = new PlayerInputInterpreter(keyBindData);
         playerInputBuffer = new PlayerInputBuffer(playerInputInterpreter);
         playerInput = new PlayerInputIntent(playerInputBuffer);
-
-        gameConstantParametor = new GameConstantParametor(
-            Constant,
-            constansModify,
-            playerStateManager
-        );
+        resolver = new InputResolver(playerStateManager);
+        inputWatcher = new InputWatcher(
+            playerInput,
+            resolver);
 
         //プレイヤーアクション初期化
-        
         removeItem = new ItemRemover(this.gameObject.transform);
-        inputWatcher = new InputWatcher(playerInput);
         isItemData = new AbilityManager(
             removeItem,
-            inputWatcher);
+            resolver);
         getItemAction = new GetItemAction(isItemData, playerInput);
         groundCollisionLogic = new GroundCollisionLogic(playerStateManager,
                                                         groundLayer);
@@ -99,6 +94,12 @@ public class PlayerController : MonoBehaviour
                                                 playerStateManager,
                                                 wallResolver);
 
+        gameConstantParametor = new GameConstantParametor(
+            Constant,
+            constansModify,
+            playerStateManager
+        );
+
         animationSystem = new AnimationSystem(animationDataBase, animator);
 
         animationSystem.Bind(stateWatcher);
@@ -107,6 +108,7 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         playerInputBuffer.onUpdate();
+        inputWatcher.onUpdate();
         getItemAction.getAction(this.gameObject, screenCenterDetector);
     }
 

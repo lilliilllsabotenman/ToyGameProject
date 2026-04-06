@@ -7,11 +7,6 @@ public enum AbilitySituation
     Pasiv
 }
 
-public interface StateChangeModifire
-{
-    public bool StateJudgment(PlayerStateData state);
-}
-
 public interface OnPlayerAction
 {
     public ActionType ActionType { get; }
@@ -35,8 +30,13 @@ public interface IAbility
 { 
     public ActionType GetActionType();
     public ItemType GetItemType();
-    public StateChangeModifire ActionModifyPress();
-    public StateChangeModifire ActionModifyReleased();
+    public Enum ActionModifyPress();
+    public Enum ActionModifyReleased();
+}
+
+public interface AbilityBehaviour
+{
+    public void Behaviour();
 }
 
 public interface IInteract

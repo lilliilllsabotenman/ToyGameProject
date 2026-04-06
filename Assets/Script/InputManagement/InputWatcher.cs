@@ -5,95 +5,128 @@ using System;
 public class InputWatcher
 {
     private readonly PlayerInputIntent intent;
+    private readonly InputResolver resolver;
 
-    private readonly Dictionary<ActionType, IAbility> onPressed = new();
-    private readonly Dictionary<ActionType, IAbility> onReleased = new();
-    private readonly Dictionary<ActionType, IAbility> onHeld = new();
 
-    public InputWatcher(PlayerInputIntent intent)
+    public InputWatcher(
+            PlayerInputIntent intent,
+            InputResolver resolver)
     {
         this.intent = intent;
-    }
-
-    // ===== 登録 =====
-
-    public void BindPressed(ActionType type, IAbility ability)//押したら
-    {
-        if (onPressed.ContainsKey(type))
-            onPressed[type] = ability;
-        else
-            onPressed[type] = ability;
-    }
-
-    public void BindReleased(ActionType type, IAbility ability)//離したら
-    {
-        if (onReleased.ContainsKey(type))
-            onReleased[type] = ability;
-        else
-            onReleased[type] = ability;
-    }
-
-    public void BindHeld(ActionType type, IAbility ability)//押し続けたら
-    {
-        if (onHeld.ContainsKey(type))
-            onHeld[type] = ability;
-        else
-            onHeld[type] = ability;
-    }
-
-    // ===== 解除（個別） =====
-
-    public void UnbindPressed(ActionType type)
-    {
-        onPressed.Remove(type);
-    }
-
-    public void UnbindReleased(ActionType type)
-    {
-        onReleased.Remove(type);
-    }
-
-    public void UnbindHeld(ActionType type)
-    {
-        onHeld.Remove(type);
-    }
-
-    // ===== 全解除 =====
-
-    public void Clear(ActionType type)
-    {
-        onPressed.Remove(type);
-        onReleased.Remove(type);
-        onHeld.Remove(type);
-    }
-
-    public void ClearAll()
-    {
-        onPressed.Clear();
-        onReleased.Clear();
-        onHeld.Clear();
+        this.resolver = resolver;
     }
 
     // ===== 実行 =====
 
     public void onUpdate()
     {
-        foreach (var pair in onPressed)
+        foreach (ActionType action in Enum.GetValues(typeof(ActionType)))
         {
-            if (intent.IsPressed(pair.Key))
-                pair.Value.ActionModifyPress();
-        }
+            if (intent.IsPressed(action))
+            {
+                resolver.OnPressed(action);
+            }
 
-        foreach (var pair in onReleased)
-        {
-            if (intent.IsReleased(pair.Key))
-                pair.Value?.ActionModifyReleased();
-        }
+            if (intent.IsReleased(action))
+            {
+                resolver.OnReleased(action);
+            }
 
-        foreach (var pair in onHeld)
+            if (intent.IsHeld(action))
+            {
+                resolver.OnHeld(action);
+            }
+        }       
+    }
+}
+
+public class InputResolver
+{
+    private readonly PlayerStateManager stateManager;
+
+    private readonly Dictionary<ActionType, Action> CommandAction = new();
+    private readonly Dictionary<ActionType, IAbility> AbilityActionPress = new();
+    private readonly Dictionary<ActionType, IAbility> AbilityActionRelease = new();
+    private readonly Dictionary<ActionType, IAbility> AbilityActionHeld = new();
+
+    public InputResolver(PlayerStateManager stateManager)
+    {
+        this.stateManager = stateManager;
+    }
+
+    // ===== 実行 =====
+
+    public void OnPressed(ActionType type)
+    {
+        if (AbilityActionPress.TryGetValue(type, out var ability))
         {
-            // if (intent.IsHeld(pair.Key))
-            //     pair.Value?.Invoke();
+            stateManager.TryChangeState(ability.ActionModifyPress());
         }
+    }
+
+    public void OnReleased(ActionType type)
+    {
+        if (AbilityActionRelease.TryGetValue(type, out var ability))
+        {
+            stateManager.TryChangeState(ability.ActionModifyReleased());
+        }
+    }
+
+    public void OnHeld(ActionType type)
+    {
+        if (AbilityActionHeld.TryGetValue(type, out var ability))
+        {
+            // ability.Execute();
+        }
+    }
+
+    // ===== 登録 =====
+
+    public void BindPressed(ActionType type, IAbility ability)
+    {
+        AbilityActionPress[type] = ability;
+    }
+
+    public void BindReleased(ActionType type, IAbility ability)
+    {
+        AbilityActionRelease[type] = ability;
+    }
+
+    public void BindHeld(ActionType type, IAbility ability)
+    {
+        AbilityActionHeld[type] = ability;
+    }
+
+    // ===== 解除（個別） =====
+
+    public void UnbindPressed(ActionType type)
+    {
+        AbilityActionPress.Remove(type);
+    }
+
+    public void UnbindReleased(ActionType type)
+    {
+        AbilityActionRelease.Remove(type);
+    }
+
+    public void UnbindHeld(ActionType type)
+    {
+        AbilityActionHeld.Remove(type);
+    }
+
+    // ===== 解除（まとめ） =====
+
+    public void Clear(ActionType type)
+    {
+        AbilityActionPress.Remove(type);
+        AbilityActionRelease.Remove(type);
+        AbilityActionHeld.Remove(type);
+    }
+
+    public void ClearAll()
+    {
+        AbilityActionPress.Clear();
+        AbilityActionRelease.Clear();
+        AbilityActionHeld.Clear();
     }
 }

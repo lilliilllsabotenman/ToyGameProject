@@ -2,26 +2,6 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class MoveStateJudgment : StateChangeModifire
-{
-    public bool StateJudgment(PlayerStateData data)
-    {
-        if(data.movementState == MovementState.Dash) return false;
-
-        else return true;
-    }
-}
-
-public class StandStateJudgment : StateChangeModifire
-{
-    public bool StateJudgment(PlayerStateData data)
-    {
-        if(data.positioningState != PositioningState.Ground) return false;
-
-        else return true;
-    }
-}
-
 public class WallCollisionResolver
 {
     private readonly List<Vector3> contactNormals = new List<Vector3>();
@@ -81,8 +61,8 @@ public class PlayerMoveAction
 
     private WallCollisionResolver wallResolver;
 
-    private MoveStateJudgment moveStateJudgment = new MoveStateJudgment();
-    private StandStateJudgment StandStateJudgment = new StandStateJudgment();
+    // private MoveStateJudgment moveStateJudgment = new MoveStateJudgment();
+    // private StandStateJudgment StandStateJudgment = new StandStateJudgment();
 
     public PlayerMoveAction(
         Rigidbody rb,
@@ -115,10 +95,10 @@ public class PlayerMoveAction
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        if(Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0)
-            playerStateManager.TryMovementStateChange(MovementState.Move, moveStateJudgment);
-        else
-            playerStateManager.TryMovementStateChange(MovementState.Stand, StandStateJudgment);
+        if(Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
+            // playerStateManager.TryMovementStateChange(MovementState.Move, moveStateJudgment);
+        else;
+            // playerStateManager.TryMovementStateChange(MovementState.Stand, StandStateJudgment);
 
         if(playerStateManager.stateData.movementState == MovementState.Move)
             defaultMoveBehaviour.DefaultMove(h, v);

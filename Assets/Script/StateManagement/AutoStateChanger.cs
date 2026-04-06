@@ -5,7 +5,6 @@ public class GroundCollisionLogic
 {
     private LayerMask groundLayer;
     private PlayerStateManager playerState;
-    private GroundStateJudgment groundStateJudgment = new GroundStateJudgment();
 
     public GroundCollisionLogic(PlayerStateManager playerState, LayerMask groundLayer)
     {
@@ -23,23 +22,8 @@ public class GroundCollisionLogic
         foreach(ContactPoint contact in collision.contacts)
         {
             if(contact.normal.y > 0.5f)
-                return playerState.TryPositioningStateChange(PositioningState.Ground, groundStateJudgment);
+                return playerState.TryChangeState(PositioningState.Ground);
         }
-
-        return false;
-    }
-}
-
-
-public class GroundStateJudgment : StateChangeModifire
-{
-    public bool StateJudgment(PlayerStateData state)
-    {
-        // 空中状態なら着地を許可
-        if(state.positioningState == PositioningState.Jump ||
-           state.positioningState == PositioningState.Gliding ||
-           state.positioningState != PositioningState.Clip)
-            return true;
 
         return false;
     }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public enum ItemType
 {
+    None,
     Circle,
     Square,
     Triangle,
@@ -22,6 +23,13 @@ public class AbilityItemSlot
         this.Ability = ability;
         this.itemType = itemType;
     }
+
+    public bool IsComplete()
+    {
+        return ItemObject != null
+            && Ability != null
+            && itemType != ItemType.None;
+    }
 }
 
 /// <summary>
@@ -36,18 +44,20 @@ public class AbilityManager
 
     public AbilityManager(
         ItemRemover removeItem,
-        InputWatcher inputWatcher)
+        InputResolver resolver)
     {
         this.removeItem = removeItem;
 
         this.abilityActivator = new AbilityActivator(
             MasterAbilities,
-            inputWatcher
+            resolver
         );
     }
 
     public bool TryAddAbility(AbilityItemSlot slot)
     {
+        if(!slot.IsComplete()) return false;
+
         if (MasterAbilities.TryGetValue(slot.itemType, out var old))
         {
             RemoveItem(old);
@@ -77,7 +87,7 @@ public class AbilityManager
 public class AbilityActivator
 {
     private readonly Dictionary<ItemType, AbilityItemSlot> masterAbilities;
-    private readonly InputWatcher inputWatcher;
+    private readonly InputResolver resolver;
 
     private readonly List<OnEventAbility> eventAbilities = new();
     private readonly List<OnFixedUpdateAbility> fixedUpdateAbilities = new();
@@ -86,11 +96,11 @@ public class AbilityActivator
 
     public AbilityActivator(
         Dictionary<ItemType, AbilityItemSlot> masterAbilities,
-        InputWatcher inputWatcher
+        InputResolver resolver
     )
     {
         this.masterAbilities = masterAbilities;
-        this.inputWatcher = inputWatcher;
+        this.resolver = resolver;
     }
 
     // ===== 公開API =====
@@ -136,18 +146,18 @@ public class AbilityActivator
     {
         var actionType = ability.GetActionType();
 
-        inputWatcher.BindPressed(actionType, ability);
-        inputWatcher.BindReleased(actionType, ability);
-        inputWatcher.BindHeld(actionType, ability);
+        resolver.BindPressed(actionType, ability);
+        resolver.BindReleased(actionType, ability);
+        resolver.BindHeld(actionType, ability);
     }
 
     private void Unregister(IAbility ability)
     {
         var actionType = ability.GetActionType();
 
-        inputWatcher.UnbindPressed(actionType);
-        inputWatcher.UnbindReleased(actionType);
-        inputWatcher.UnbindHeld(actionType);
+        resolver.UnbindPressed(actionType);
+        resolver.UnbindReleased(actionType);
+        resolver.UnbindHeld(actionType);
     }
 
     private void RebuildExecutionLists()
