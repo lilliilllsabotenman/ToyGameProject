@@ -32,13 +32,50 @@ public class AbilityItemSlot
     }
 }
 
+public class AbilityDataBase
+{
+    private Dictionary<ItemType, AbilityItemSlot> MasterAbilities = new();
+    private Dictionary<ItemType, AbilityBehaviour> BehaviourLists = new();
+
+    public void RemoveAbilites(ItemType type)
+    {
+        MasterAbilities.Remove(type);
+        BehaviourLists.Remove(type);
+    }
+
+    public void AddIAbility(
+                    ItemType type, 
+                    AbilityItemSlot ability,
+                    AbilityBehaviour behaviour)
+    {
+        MasterAbilities[type] = ability;
+        BehaviourLists[type] = behaviour;
+    }
+
+    public AbilityItemSlot GetIAbility(ItemType type, out AbilityItemSlot iAbility)
+    {
+        return MasterAbilities.TryGetValue(type, out iAbility);
+    }
+
+    public bool TryGetBehaviour(ItemType type, out AbilityBehaviour behaviour)
+    {
+        // 主の存在を前提にするならチェックを挟む
+        if (!MasterAbilities.ContainsKey(type))
+        {
+            behaviour = null;
+            return false;
+        }
+
+        return BehaviourLists.TryGetValue(type, out behaviour);
+    }
+}
+
 /// <summary>
 /// アビリティ管理クラス（所持・構成管理のみ）
 /// </summary>
 public class AbilityManager
 {
-    public Dictionary<ItemType, AbilityItemSlot> MasterAbilities = new();
-
+    private AbilityDataBase abilityDataBase;
     private ItemRemover removeItem;
     private AbilityActivator abilityActivator;
 
