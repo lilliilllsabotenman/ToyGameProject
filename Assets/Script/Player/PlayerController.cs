@@ -34,7 +34,8 @@ public class PlayerController : MonoBehaviour
     public ConstansModify constansModify = new ConstansModify();
     public GameConstantParametor gameConstantParametor;
 
-    public AbilityManager isItemData;
+    public AbilityManager abilityManager;
+    private AbilityDataBase abilityDataBase;
     private ItemRemover removeItem;
 
     //プレイヤーの状態を制御するクラス Script/GameOption/Gamerule.cs参照
@@ -80,10 +81,11 @@ public class PlayerController : MonoBehaviour
 
         //プレイヤーアクション初期化
         removeItem = new ItemRemover(this.gameObject.transform);
-        isItemData = new AbilityManager(
+        abilityManager = new AbilityManager(
+            abilityDataBase,
             removeItem,
             resolver);
-        getItemAction = new GetItemAction(isItemData, playerInput);
+        getItemAction = new GetItemAction(abilityManager, playerInput);
         groundCollisionLogic = new GroundCollisionLogic(playerStateManager,
                                                         groundLayer);
 
