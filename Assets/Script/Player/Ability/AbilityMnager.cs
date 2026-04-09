@@ -187,7 +187,6 @@ public class AbilityActivator
 
     public AbilityActivator(InputResolver resolver)
     {
-        this.resolver = resolver;
     }
 
     public IReadOnlyList<OnEventAbility> EventAbilities => eventAbilities;

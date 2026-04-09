@@ -8,13 +8,21 @@ public enum BehaviourType
     Pasiv
 }
 
-public class BehaviourData
-{
-    public BehaviourType behaviourType;
-    public AbilityBehaviour abilityBehaviour;
-}
-
 public class BehaviourManager
 {
-    private Dictionary<ItemType, BehaviourData> BehaviourMasterData = new();
+    private AbilityDataBase abilityDataBase;
+
+    private List<AbilityBehaviour> behaviourList = new();
+    private Dictionary<MovementState, AbilityBehaviour> movementBehaviour = new();
+    private Dictionary<PositioningState, AbilityBehaviour> positioningBehaviour = new();
+    private Dictionary<PostureState, AbilityBehaviour> postureBehaviour = new();
+
+    public BehaviourManager(AbilityDataBase abilityDataBase)
+    {
+        this.abilityDataBase = abilityDataBase;
+    }
+
+    public void onUpdate()
+    {
+    }
 }
