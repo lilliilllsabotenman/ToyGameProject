@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// プレイヤーに関する動作の実行を管轄する基幹クラス
@@ -37,6 +37,8 @@ public class PlayerController : MonoBehaviour
     public AbilityManager abilityManager;
     private AbilityDataBase abilityDataBase;
     private ItemRemover removeItem;
+    private BehaviourManager behaviourManager;
+    private BehaviourExecutor BehaviourExecutor = new();
 
     //プレイヤーの状態を制御するクラス Script/GameOption/Gamerule.cs参照
     public PlayerStateData playerStateData = new PlayerStateData();
@@ -65,6 +67,7 @@ public class PlayerController : MonoBehaviour
 
     private void Awake()
     {
+        Transform tf = this.transform;
         //状態初期化
         playerStateManager = new PlayerStateManager(playerStateData);//状態本体。
         stateWatcher = new StateWatcher(playerStateManager);//状態を見張る人
@@ -80,28 +83,32 @@ public class PlayerController : MonoBehaviour
             resolver);
 
         //プレイヤーアクション初期化
-        removeItem = new ItemRemover(this.gameObject.transform);
         abilityManager = new AbilityManager(
             abilityDataBase,
-            removeItem,
+            tf,
             resolver);
         getItemAction = new GetItemAction(abilityManager, playerInput);
         groundCollisionLogic = new GroundCollisionLogic(playerStateManager,
                                                         groundLayer);
 
-        wallResolver = new WallCollisionResolver(wallMask);
-        playerMoveAction = new PlayerMoveAction(this.GetComponent<Rigidbody>(), 
-                                                Camera.main.transform,
-                                                gameConstantParametor,
-                                                playerStateManager,
-                                                wallResolver);
-
+        // FIX: PlayerMoveAction 生成前に gameConstantParametor を必ず初期化する。
+        // 以前は null のまま注入される順序だったため、移動時に参照不正が起きる構成だった。
         gameConstantParametor = new GameConstantParametor(
             Constant,
             constansModify,
             playerStateManager
         );
 
+        wallResolver = new WallCollisionResolver(wallMask);
+
+        Rigidbody rb = this.GetComponent<Rigidbody>();
+        Camera mainCam = Camera.main;
+        
+        playerMoveAction = new PlayerMoveAction(rb,
+                                                mainCam.transform,
+                                                gameConstantParametor,
+                                                playerStateManager,
+                                                wallResolver);
         animationSystem = new AnimationSystem(animationDataBase, animator);
 
         animationSystem.Bind(stateWatcher);
@@ -112,10 +119,12 @@ public class PlayerController : MonoBehaviour
         playerInputBuffer.onUpdate();
         inputWatcher.onUpdate();
         getItemAction.getAction(this.gameObject, screenCenterDetector);
+        BehaviourExecutor.OnUpdate();
     }
 
     private void FixedUpdate()
     {
+        if (playerMoveAction == null) return;
         playerMoveAction.PlayerMoving();
     }
 

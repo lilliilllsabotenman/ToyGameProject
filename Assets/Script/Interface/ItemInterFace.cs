@@ -36,6 +36,9 @@ public interface IAbility
 
 public interface AbilityBehaviour
 {
+    public Enum IGetMyAbilityState();
+    public bool IEventDriven();
+    public float GetValidityTime();
     public void Behaviour();
 }
 
@@ -50,7 +53,7 @@ public class ItemObjectBehaviour : MonoBehaviour
     protected Rigidbody rb;
     public ActionType iAction;
 
-    public virtual AbilityItemSlot GetAbility(GameObject obj)
+    public virtual AbilityItemData GetAbility(GameObject obj)
     {
         return null;
     }

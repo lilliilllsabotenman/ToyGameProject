@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using StateJudgment;
 
 public class WallCollisionResolver
 {
@@ -61,8 +62,8 @@ public class PlayerMoveAction
 
     private WallCollisionResolver wallResolver;
 
-    // private MoveStateJudgment moveStateJudgment = new MoveStateJudgment();
-    // private StandStateJudgment StandStateJudgment = new StandStateJudgment();
+    private MoveStateJudgment moveStateJudgment = new MoveStateJudgment();
+    private StandStateJudgment standStateJudgment = new StandStateJudgment();
 
     public PlayerMoveAction(
         Rigidbody rb,
@@ -95,15 +96,25 @@ public class PlayerMoveAction
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        if(Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0);
-            // playerStateManager.TryMovementStateChange(MovementState.Move, moveStateJudgment);
-        else;
-            // playerStateManager.TryMovementStateChange(MovementState.Stand, StandStateJudgment);
+        if (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0)
+        {
+            if (moveStateJudgment.StateJudgment(playerStateManager.stateData))
+            {
+                playerStateManager.TryChangeState(MovementState.Move);
+            }
+        }
+        else
+        {
+            if (standStateJudgment.StateJudgment(playerStateManager.stateData))
+            {
+                playerStateManager.TryChangeState(MovementState.Stand);
+            }
+        }
 
-        if(playerStateManager.stateData.movementState == MovementState.Move)
+        if (playerStateManager.stateData.movementState == MovementState.Move)
             defaultMoveBehaviour.DefaultMove(h, v);
 
-        if(playerStateManager.stateData.movementState == MovementState.Dash)
+        if (playerStateManager.stateData.movementState == MovementState.Dash)
             dashMoveBehaviour.DashMove(h, v);
     }
 }
@@ -223,7 +234,7 @@ public class GetItemAction
             ItemObjectBehaviour item = obj.GetComponent<ItemObjectBehaviour>() ?? obj.GetComponentInParent<ItemObjectBehaviour>();
             if(item == null) return;
             
-            AbilityItemSlot iAbility = item.GetAbility(PlayerObject);
+            AbilityItemData iAbility = item.GetAbility(PlayerObject);
 
             if(abilityManager.TryAddAbility(iAbility)) 
             {
