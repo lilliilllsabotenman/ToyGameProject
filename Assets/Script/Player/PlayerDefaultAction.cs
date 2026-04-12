@@ -1,26 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-
-public class MoveStateJudgment : IStateJudge
-{
-    public bool StateJudgment(PlayerStateData data)
-    {
-        if(data.movementState == MovementState.Dash) return false;
-
-        else return true;
-    }
-}
-
-public class StandStateJudgment : IStateJudge
-{
-    public bool StateJudgment(PlayerStateData data)
-    {
-        if(data.positioningState != PositioningState.Ground) return false;
-
-        else return true;
-    }
-}
+using StateJudgment;
 
 public class WallCollisionResolver
 {
@@ -82,7 +63,7 @@ public class PlayerMoveAction
     private WallCollisionResolver wallResolver;
 
     private MoveStateJudgment moveStateJudgment = new MoveStateJudgment();
-    private StandStateJudgment StandStateJudgment = new StandStateJudgment();
+    private StandStateJudgment standStateJudgment = new StandStateJudgment();
 
     public PlayerMoveAction(
         Rigidbody rb,
@@ -115,15 +96,25 @@ public class PlayerMoveAction
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
-        if(Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0)
-            playerStateManager.TryMovementStateChange(MovementState.Move, moveStateJudgment);
+        if (Mathf.Abs(h) > 0 || Mathf.Abs(v) > 0)
+        {
+            if (moveStateJudgment.StateJudgment(playerStateManager.stateData))
+            {
+                playerStateManager.TryChangeState(MovementState.Move);
+            }
+        }
         else
-            playerStateManager.TryMovementStateChange(MovementState.Stand, StandStateJudgment);
+        {
+            if (standStateJudgment.StateJudgment(playerStateManager.stateData))
+            {
+                playerStateManager.TryChangeState(MovementState.Stand);
+            }
+        }
 
-        if(playerStateManager.stateData.movementState == MovementState.Move)
+        if (playerStateManager.stateData.movementState == MovementState.Move)
             defaultMoveBehaviour.DefaultMove(h, v);
 
-        if(playerStateManager.stateData.movementState == MovementState.Dash)
+        if (playerStateManager.stateData.movementState == MovementState.Dash)
             dashMoveBehaviour.DashMove(h, v);
     }
 }
@@ -243,7 +234,7 @@ public class GetItemAction
             ItemObjectBehaviour item = obj.GetComponent<ItemObjectBehaviour>() ?? obj.GetComponentInParent<ItemObjectBehaviour>();
             if(item == null) return;
             
-            AbilityItemSlot iAbility = item.GetAbility(PlayerObject);
+            AbilityItemData iAbility = item.GetAbility(PlayerObject);
 
             if(abilityManager.TryAddAbility(iAbility)) 
             {
@@ -253,3 +244,34 @@ public class GetItemAction
     }
 }
 
+public class VelocityUtil
+{
+    public FloatWrapper speed = new();
+    public Rigidbody rigidBody;
+    public AnimationModifireType type = AnimationModifireType.speed;
+
+    public VelocityUtil(
+            Rigidbody rigidBody,
+            AnimationModifire animationModifire)
+    {
+        this.rigidBody = rigidBody;
+        animationModifire.AddModifire(type, speed);
+    }
+
+    public void MoveDriver(float maxSpeed)
+    {
+        Vector3 v = rigidBody.linearVelocity;
+        v.y = 0f;
+
+        float speed = v.magnitude;
+
+        // デッドゾーン
+        if (speed < 0.01f)
+            speed = 0f;
+
+        float normalized = Mathf.Clamp01(speed / maxSpeed);
+
+        // スムージング
+        this.speed.value = Mathf.Lerp(this.speed.value, normalized, Time.deltaTime * 10f);
+    }
+}

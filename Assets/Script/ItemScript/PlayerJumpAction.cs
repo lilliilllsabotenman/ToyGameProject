@@ -1,59 +1,87 @@
 using UnityEngine;
+using System;
 
 public class PlayerJumpAction : ItemObjectBehaviour
 {
-    public ItemType iType;
+    [SerializeField] protected PositioningState iState;
 
-    private void Awake ()
+    private void Awake()
     {
-        rb = this.GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
     }
 
-    public override AbilityItemSlot GetAbility(GameObject player)
+    public override AbilityItemData GetAbility(GameObject player)
     {
-        PlayerController playerController = player.GetComponent<PlayerController>();
-        JumpComponent jumpComponent = new JumpComponent(
-            player.GetComponent<Rigidbody>(),
-            playerController.gameConstantParametor,
-            playerController.playerInput,
-            playerController.playerStateManager,
-            iAction
+        Rigidbody playerRb = player.GetComponent<Rigidbody>();
+        PlayerController controller = player.GetComponent<PlayerController>();
+
+        JumpComponent ability = new JumpComponent(itemType, actionType);
+
+        JumpBehaviour behaviour = new JumpBehaviour(
+            playerRb,
+            controller.gameConstantParametor,
+            iState
         );
 
-        AbilityItemSlot ability = new AbilityItemSlot(
+        AbilityItemData abilityData = new AbilityItemData(
             this,
-            jumpComponent,
-            this.iType
+            ability,
+            behaviour,
+            itemType
         );
 
-        return ability;
+        return abilityData;
     }
 }
 
-public class JumpComponent : OnFixedUpdateAbility, IAbility
+public class JumpComponent : IAbility
 {
-    public AbilitySituation isSituation = AbilitySituation.Pasiv;      
+    private ItemType itemType;
+    private ActionType actionType;
 
-    private ActionType iAction;
-    private PlayerInputIntent inputIntent;
-    private JumpBehaviour jumpBehaviour;
-    private PlayerStateManager playerStateManager;
+    public JumpComponent(ItemType itemType, ActionType actionType)
+    {
+        this.itemType = itemType;
+        this.actionType = actionType;
+    }
 
-    private JumpStateJudgment jumpStateJudgment = new JumpStateJudgment();
+    public ItemType GetItemType()
+    {
+        return itemType;
+    }
+
+    public ActionType GetActionType()
+    {
+        return actionType;
+    }
+
+    public Enum ActionModifyPress()
+    {
+        return PositioningState.Jump;
+    }
+
+    public Enum ActionModifyReleased()
+    {
+        return PositioningState.Ground;
+    }
+}
+
+public class JumpBehaviour : AbilityBehaviour
+{
+    private Rigidbody rb;
+    private GameConstantParametor gameConstant;
+    private PositioningState iState;
 
     private int level = 1;
-    private bool camJump;
 
-    public JumpComponent(Rigidbody rb, 
-                        GameConstantParametor gameConstant, 
-                        PlayerInputIntent inputIntent,
-                        PlayerStateManager playerStateManager,
-                        ActionType iAction)
+    public JumpBehaviour(
+        Rigidbody rb,
+        GameConstantParametor gameConstant,
+        PositioningState state)
     {
-        jumpBehaviour = new JumpBehaviour(rb, gameConstant);
-        this.inputIntent = inputIntent;
-        this.playerStateManager = playerStateManager;
-        this.iAction = iAction;
+        this.rb = rb;
+        this.gameConstant = gameConstant;
+        this.iState = state;
     }
 
     public void SetLevel(int level)
@@ -61,45 +89,54 @@ public class JumpComponent : OnFixedUpdateAbility, IAbility
         this.level = level;
     }
 
-    public void SetActive()
-    {                                                                           
-        isSituation = AbilitySituation.Active;
+    public Enum IGetMyAbilityState()
+    {
+        return iState;
     }
 
-    public void OnFixedUpdate()
+    public bool IEventDriven()
     {
-        if(isSituation == AbilitySituation.Pasiv)return;
+        return true; // ★瞬間処理
+    }
 
-        if(inputIntent.IsPressed(iAction))
+    public float GetValidityTime()
+    {
+        return 0f;
+    }
+
+    public void Behaviour()
+    {
+        switch (level)
         {
-            if(playerStateManager.TryPositioningStateChange(PositioningState.Jump, jumpStateJudgment))
-            {
-                switch(level)
-                {
-                    case 1: jumpBehaviour.JumpAction_lv1(); break;
-                    case 2: jumpBehaviour.JumpAction_lv2(); break;
-                    case 3: jumpBehaviour.JumpAction_lv3(); break;
-                }
-            }
+            case 1:
+                JumpAction_lv1();
+                break;
+
+            case 2:
+                JumpAction_lv2();
+                break;
+
+            case 3:
+                JumpAction_lv3();
+                break;
+
+            default:
+                JumpAction_lv1();
+                break;
         }
     }
-}
 
-public class JumpBehaviour
-{
-    private Rigidbody rb;
-    private GameConstantParametor gameConstant;
-
-    public JumpBehaviour(Rigidbody rb, GameConstantParametor gameConstant)
+    public bool Cancel()
     {
-        this.rb = rb;
-        this.gameConstant = gameConstant;
+        // ジャンプはキャンセル不要
+        return false;
     }
 
-    public void JumpAction_lv1()
+    private void JumpAction_lv1()
     {
-        if(rb == null) return;
-        
+        if (rb == null) return;
+    
+
         rb.linearVelocity = new Vector3(
             rb.linearVelocity.x,
             gameConstant.GetJumpForce(),
@@ -107,23 +144,13 @@ public class JumpBehaviour
         );
     }
 
-    public void JumpAction_lv2()
+    private void JumpAction_lv2()
     {
-        //LV2処理。
+        JumpAction_lv1();
     }
 
-    public void JumpAction_lv3()
+    private void JumpAction_lv3()
     {
-        //LV3処理。
-    }
-}
-
-public class JumpStateJudgment : IStateJudge
-{
-    public bool StateJudgment(PlayerStateData state)
-    {
-        if(state.positioningState == PositioningState.Ground) return true;
-
-        else return false;
+        JumpAction_lv1();
     }
 }

@@ -1,4 +1,5 @@
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections.Generic;
 using System;
 
 public enum MovementState
@@ -23,29 +24,27 @@ public enum PositioningState
     Clip
 }
 
-public interface IStateJudge
-{
-    public bool StateJudgment(PlayerStateData state);
-}
-
 public class PlayerStateData
 {
-    public MovementState movementState { get; private set;}
-    public PositioningState positioningState { get; private set;}
-    public PostureState postureState { get; private set;}
+    public MovementState movementState { get; private set; }
+    public PositioningState positioningState { get; private set; }
+    public PostureState postureState { get; private set; }
 
     public void SetMovementState(MovementState state)
     {
+        Debug.Log(state);
         movementState = state;
     }
 
     public void SetPostioningState(PositioningState state)
-    {  
+    {
+        Debug.Log(state);
         positioningState = state;
     }
 
     public void SetPostureState(PostureState state)
     {
+        Debug.Log(state);
         postureState = state;
     }
 }
@@ -54,41 +53,64 @@ public class PlayerStateManager
 {
     public PlayerStateData stateData { get; private set; }
 
-    // 中立イベント（意味を持たない）
+    private Dictionary<Type, Func<Enum, bool>> stateChanged;
+
     public event Action<PlayerStateData> OnStateChanged;
 
     public PlayerStateManager(PlayerStateData stateData)
     {
         this.stateData = stateData;
+
+        // FIX: Explicitly initialize defaults instead of relying on enum order.
+        this.stateData.SetMovementState(MovementState.Stand);
+        this.stateData.SetPostioningState(PositioningState.Ground);
+        this.stateData.SetPostureState(PostureState.Upright);
+
+        stateChanged = new Dictionary<Type, Func<Enum, bool>>
+        {
+            { typeof(MovementState), e => movementChanged((MovementState)e) },
+            { typeof(PositioningState), e => positioningChanged((PositioningState)e) },
+            { typeof(PostureState), e => postureChanged((PostureState)e) },
+        };
     }
 
-    public bool TryMovementStateChange(MovementState state, IStateJudge judgment)
+    public bool TryChangeState(Enum newState)
     {
-        if (!judgment.StateJudgment(stateData)) return false;
+        Type type = newState.GetType();
+
+        if (!stateChanged.TryGetValue(type, out var handler))
+        {
+            Debug.LogError($"Unsupported state type: {type}");
+            return false;
+        }
+
+        bool result = handler(newState);
+
+        if (result)
+            OnStateChanged?.Invoke(stateData);
+
+        return result;
+    }
+
+    public bool movementChanged(MovementState state)
+    {
+        // FIX: State value was never written before; movement stayed Stand and blocked PlayerDefaultAction.
         if (stateData.movementState == state) return false;
-
         stateData.SetMovementState(state);
-        OnStateChanged?.Invoke(stateData);
         return true;
     }
 
-    public bool TryPositioningStateChange(PositioningState state, IStateJudge judgment)
+    public bool positioningChanged(PositioningState state)
     {
-        if (!judgment.StateJudgment(stateData)) return false;
         if (stateData.positioningState == state) return false;
-
         stateData.SetPostioningState(state);
-        OnStateChanged?.Invoke(stateData);
         return true;
     }
 
-    public bool TryPostureStateChange(PostureState state, IStateJudge judgment)
+    public bool postureChanged(PostureState state)
     {
-        if (!judgment.StateJudgment(stateData)) return false;
         if (stateData.postureState == state) return false;
-
         stateData.SetPostureState(state);
-        OnStateChanged?.Invoke(stateData);
         return true;
     }
 }

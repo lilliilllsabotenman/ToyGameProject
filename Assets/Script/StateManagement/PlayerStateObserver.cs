@@ -36,11 +36,18 @@ public class StateWatcher
             t != typeof(PositioningState))
         {
             Debug.LogError("だから型安全を確保しろって言ったんだ");
+            return;
         }
 
-        _events[typeof(T)] = action;
+        if (_events.TryGetValue(t, out var existing))
+        {
+            _events[t] = Delegate.Combine(existing, action);
+        }
+        else
+        {
+            _events[t] = action;
+        }
     }
-
     /// <summary>
     /// イベント発火（内部用）
     /// </summary>
@@ -54,8 +61,6 @@ public class StateWatcher
 
     public void StateChanged(PlayerStateData state)
     {
-        Debug.Log("State Changed");
-
         // 初回は基準値セットだけ
         if (!initialized)
         {

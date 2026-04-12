@@ -3,6 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System;
 
+public enum ParametorType
+{
+    Bool,
+    Float,
+    Int,
+    Trigger
+}
+
 /// <summary>
 /// 条件付きフィールド
 /// use = true の場合のみこの条件が有効になる
@@ -17,7 +25,7 @@ public class ConditionField<T> where T : Enum
 /// <summary>
 /// アニメーション1件分の定義
 /// 「この状態のとき、このパラメータをONにする」
-/// </summary>
+/// </summary>                          
 [System.Serializable]
 public class AnimationData
 {
@@ -27,6 +35,9 @@ public class AnimationData
 
     [Header("アニメーションパラメーター名")]
     public string AnimationParameter;
+
+    [Header("パラメーターの型")]
+    public ParametorType parametorType;
 }
 
 /// <summary>

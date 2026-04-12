@@ -1,64 +1,69 @@
 using UnityEngine;
+using System;
 
 public class CrouchAction : ItemObjectBehaviour
 {
-    public ItemType iType;
+    [SerializeField] protected PostureState iState;
 
-    private void Awake ()
+    private void Awake()
     {
-        rb = this.GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody>();
     }
 
-    public override AbilityItemSlot GetAbility(GameObject player)
+    public override AbilityItemData GetAbility(GameObject player)
     {
-        PlayerController playerComtroller = player.GetComponent<PlayerController>();
-        Collider playerCollider = playerComtroller.gameObject.GetComponent<Collider>();
-        CrouchComponent crouchComponent = new CrouchComponent(        
-            playerComtroller.playerInput,
-            playerCollider,
-            playerComtroller.playerStateManager,
-            player.GetComponent<BoxCollider>(),
-            iAction
-        );
+        BoxCollider playerCollider = player.GetComponent<BoxCollider>();
 
-        AbilityItemSlot ability = new AbilityItemSlot(
+        var ability = new CrouchComponent(itemType, actionType);
+
+        var behaviour = new CrouchBehaviour(playerCollider, iState);
+
+        return new AbilityItemData(
             this,
-            crouchComponent,
-            this.iType
+            ability,
+            behaviour,
+            itemType
         );
-
-        return ability;
     }
 }
 
-public class CrouchComponent : OnFixedUpdateAbility, IAbility
+public class CrouchComponent : IAbility
 {
-    private AbilitySituation isSituation = AbilitySituation.Pasiv; 
-    
-    private ActionType iAction; 
-    private PlayerInputIntent inputIntent;
-    private Collider playerCollider;
-    private PlayerStateManager playerState;
-    private CrouchBehaviour crouchBehaviour;
+    private ItemType itemType;
+    private ActionType actionType;
 
-    private int level = 1;
-    private float ObjectScale_Y;
-
-    private CorouchStateJudgment CorouchStateJudgment = new CorouchStateJudgment();
-    private UprightStateJudgment uprightStateJudgment = new UprightStateJudgment();
-
-    public CrouchComponent( PlayerInputIntent inputIntent, 
-                            Collider playerCollider,
-                            PlayerStateManager playerState,
-                            BoxCollider col,
-                            ActionType iAction)
+    public CrouchComponent(ItemType itemType, ActionType actionType)
     {
-        this.inputIntent = inputIntent;
-        this.playerCollider = playerCollider;
-        this.playerState = playerState;
-        this.iAction = iAction;
+        this.itemType = itemType;
+        this.actionType = actionType;
+    }
 
-        crouchBehaviour = new CrouchBehaviour(col);
+    public ItemType GetItemType() => itemType;
+
+    public ActionType GetActionType() => actionType;
+
+    public Enum ActionModifyPress() => PostureState.Crouch;
+
+    public Enum ActionModifyReleased() => PostureState.Upright;
+}
+
+public class CrouchBehaviour : AbilityBehaviour
+{
+    private BoxCollider col;
+    private PostureState iState;
+
+    private Vector3 defaultSize;
+    private Vector3 defaultCenter;
+
+    private int level = 1; // ★デフォルト設定
+
+    public CrouchBehaviour(BoxCollider col, PostureState state)
+    {
+        this.col = col;
+        this.iState = state;
+
+        defaultSize = col.size;
+        defaultCenter = col.center;
     }
 
     public void SetLevel(int level)
@@ -66,96 +71,72 @@ public class CrouchComponent : OnFixedUpdateAbility, IAbility
         this.level = level;
     }
 
-    public void SetActive()
+    public Enum IGetMyAbilityState() => iState;
+
+    public bool IEventDriven() => false;
+
+    public float GetValidityTime() => Mathf.Infinity;
+
+    public void Behaviour()
     {
-        isSituation = AbilitySituation.Active;
+        switch (level)
+        {
+            case 1:
+                CrouchAction_lv1();
+                break;
+
+            case 2:
+                CrouchAction_lv2();
+                break;
+
+            case 3:
+                CrouchAction_lv3();
+                break;
+
+            default:
+                CrouchAction_lv1();
+                break;
+        }
     }
 
-    public void OnFixedUpdate()
+    public bool Cancel()
     {
-        if(isSituation == AbilitySituation.Pasiv)return;
-        if(inputIntent.IsPressed(iAction))//この中でSwitch分けちゃっていいと思う。
-        {
-            playerState.TryPostureStateChange(PostureState.Crouch, CorouchStateJudgment);
-        }
-        if(inputIntent.IsReleased(iAction)) 
-        {
-            playerState.TryPostureStateChange(PostureState.Upright, uprightStateJudgment);
-        }
+        //Todo:キャンセル必要判定の追加
+        ReleasedCollider();
 
-        if(playerState.stateData.postureState == PostureState.Crouch)
-        {
-            switch (level)
-            {
-                case 1: crouchBehaviour.CrouchAction_lv1(); break;
-                case 2: crouchBehaviour.CrouchAction_lv2(); break;
-                case 3: crouchBehaviour.CrouchAction_lv3(); break;
-            }
-        }
-
-        if(playerState.stateData.postureState == PostureState.Upright)
-        {
-            crouchBehaviour.ReleasedCollider();
-        }
-    }
-}
-
-public class CrouchBehaviour
-{
-    private BoxCollider col;
-
-    private Vector3 defaultSize;
-    private Vector3 defaultCenter;
-
-    public CrouchBehaviour(BoxCollider col)
-    {
-        this.col = col;
-        defaultSize = col.size;
-        defaultCenter = col.center;
+        return false;
     }
 
-    public void CrouchAction_lv1()
+    private void CrouchAction_lv1()
     {
         float targetHeight = defaultSize.y / 2;
 
-        float newY;
-
-        if (Mathf.Abs(col.size.y - targetHeight) >= 0.01f)
-        {
-            newY = col.size.y + (targetHeight - col.size.y) / 5f;
-        }
-        else
-        {
-            newY = targetHeight;
-        }
+        float newY = Mathf.Abs(col.size.y - targetHeight) >= 0.01f
+            ? col.size.y + (targetHeight - col.size.y) / 5f
+            : targetHeight;
 
         ApplyHeight(newY);
     }
 
-    public void CrouchAction_lv2()
+    private void CrouchAction_lv2()
     {
-
+        // TODO: 強化版（例：さらに低く or 速く）
+        CrouchAction_lv1();
     }
 
-    public void CrouchAction_lv3()
+    private void CrouchAction_lv3()
     {
-        
+        // TODO: 最大強化
+        CrouchAction_lv1();
     }
 
-    public void ReleasedCollider()
+    private void ReleasedCollider()
     {
         float targetHeight = defaultSize.y;
 
-        float newY;
-
-        if (Mathf.Abs(col.size.y - targetHeight) >= 0.01f)
-        {
-            newY = col.size.y + (targetHeight - col.size.y) / 5f;
-        }
-        else
-        {
-            newY = targetHeight;
-        }
+        float newY = Mathf.Abs(col.size.y - targetHeight) >= 0.01f
+            ? col.size.y + (targetHeight - col.size.y) / 5f
+            : targetHeight;
 
         ApplyHeight(newY);
     }
@@ -172,23 +153,5 @@ public class CrouchBehaviour
         center.y = defaultCenter.y - offset;
 
         col.center = center;
-    }
-}
-
-public class UprightStateJudgment : IStateJudge
-{
-    public bool StateJudgment(PlayerStateData state)
-    {
-        return true;
-    }
-}
-
-public class CorouchStateJudgment : IStateJudge
-{
-    public bool StateJudgment(PlayerStateData state)
-    {
-        if(state.positioningState != PositioningState.Clip) return true;
-
-        else return false;
     }
 }
