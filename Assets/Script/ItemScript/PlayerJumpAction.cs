@@ -1,129 +1,156 @@
-// using UnityEngine;
+using UnityEngine;
+using System;
 
-// public class PlayerJumpAction : ItemObjectBehaviour
-// {
-//     public ItemType iType;
+public class PlayerJumpAction : ItemObjectBehaviour
+{
+    [SerializeField] protected PositioningState iState;
 
-//     private void Awake ()
-//     {
-//         rb = this.GetComponent<Rigidbody>();
-//     }
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
 
-//     public override AbilityItemSlot GetAbility(GameObject player)
-//     {
-//         PlayerController playerController = player.GetComponent<PlayerController>();
-//         JumpComponent jumpComponent = new JumpComponent(
-//             player.GetComponent<Rigidbody>(),
-//             playerController.gameConstantParametor,
-//             playerController.playerInput,
-//             playerController.playerStateManager,
-//             iAction
-//         );
+    public override AbilityItemData GetAbility(GameObject player)
+    {
+        Rigidbody playerRb = player.GetComponent<Rigidbody>();
+        PlayerController controller = player.GetComponent<PlayerController>();
 
-//         AbilityItemSlot ability = new AbilityItemSlot(
-//             this,
-//             jumpComponent,
-//             this.iType
-//         );
+        JumpComponent ability = new JumpComponent(itemType, actionType);
 
-//         return ability;
-//     }
-// }
+        JumpBehaviour behaviour = new JumpBehaviour(
+            playerRb,
+            controller.gameConstantParametor,
+            iState
+        );
 
-// public class JumpComponent : OnFixedUpdateAbility, IAbility
-// {
-//     public AbilitySituation isSituation = AbilitySituation.Pasiv;      
+        AbilityItemData abilityData = new AbilityItemData(
+            this,
+            ability,
+            behaviour,
+            itemType
+        );
 
-//     private ActionType iAction;
-//     private PlayerInputIntent inputIntent;
-//     private JumpBehaviour jumpBehaviour;
-//     private PlayerStateManager playerStateManager;
+        return abilityData;
+    }
+}
 
-//     private JumpStateJudgment jumpStateJudgment = new JumpStateJudgment();
+public class JumpComponent : IAbility
+{
+    private ItemType itemType;
+    private ActionType actionType;
 
-//     private int level = 1;
-//     private bool camJump;
+    public JumpComponent(ItemType itemType, ActionType actionType)
+    {
+        this.itemType = itemType;
+        this.actionType = actionType;
+    }
 
-//     public JumpComponent(Rigidbody rb, 
-//                         GameConstantParametor gameConstant, 
-//                         PlayerInputIntent inputIntent,
-//                         PlayerStateManager playerStateManager,
-//                         ActionType iAction)
-//     {
-//         jumpBehaviour = new JumpBehaviour(rb, gameConstant);
-//         this.inputIntent = inputIntent;
-//         this.playerStateManager = playerStateManager;
-//         this.iAction = iAction;
-//     }
+    public ItemType GetItemType()
+    {
+        return itemType;
+    }
 
-//     public void SetLevel(int level)
-//     {
-//         this.level = level;
-//     }
+    public ActionType GetActionType()
+    {
+        return actionType;
+    }
 
-//     public void SetActive()
-//     {                                                                           
-//         isSituation = AbilitySituation.Active;
-//     }
+    public Enum ActionModifyPress()
+    {
+        return PositioningState.Jump;
+    }
 
-//     public void OnFixedUpdate()
-//     {
-//         if(isSituation == AbilitySituation.Pasiv)return;
+    public Enum ActionModifyReleased()
+    {
+        return PositioningState.Ground;
+    }
+}
 
-//         if(inputIntent.IsPressed(iAction))
-//         {
-//             if(playerStateManager.TryPositioningStateChange(PositioningState.Jump, jumpStateJudgment))
-//             {
-//                 switch(level)
-//                 {
-//                     case 1: jumpBehaviour.JumpAction_lv1(); break;
-//                     case 2: jumpBehaviour.JumpAction_lv2(); break;
-//                     case 3: jumpBehaviour.JumpAction_lv3(); break;
-//                 }
-//             }
-//         }
-//     }
-// }
+public class JumpBehaviour : AbilityBehaviour
+{
+    private Rigidbody rb;
+    private GameConstantParametor gameConstant;
+    private PositioningState iState;
 
-// public class JumpBehaviour
-// {
-//     private Rigidbody rb;
-//     private GameConstantParametor gameConstant;
+    private int level = 1;
 
-//     public JumpBehaviour(Rigidbody rb, GameConstantParametor gameConstant)
-//     {
-//         this.rb = rb;
-//         this.gameConstant = gameConstant;
-//     }
+    public JumpBehaviour(
+        Rigidbody rb,
+        GameConstantParametor gameConstant,
+        PositioningState state)
+    {
+        this.rb = rb;
+        this.gameConstant = gameConstant;
+        this.iState = state;
+    }
 
-//     public void JumpAction_lv1()
-//     {
-//         if(rb == null) return;
-        
-//         rb.linearVelocity = new Vector3(
-//             rb.linearVelocity.x,
-//             gameConstant.GetJumpForce(),
-//             rb.linearVelocity.z
-//         );
-//     }
+    public void SetLevel(int level)
+    {
+        this.level = level;
+    }
 
-//     public void JumpAction_lv2()
-//     {
-//         //LV2処理。
-//     }
+    public Enum IGetMyAbilityState()
+    {
+        return iState;
+    }
 
-//     public void JumpAction_lv3()
-//     {
-//         //LV3処理。
-//     }
-// }
+    public bool IEventDriven()
+    {
+        return true; // ★瞬間処理
+    }
 
-// public class JumpStateJudgment : IStateJudge
-// {
-//     public bool StateJudgment(PlayerStateData state)
-//     {
-//         if(state.positioningState == PositioningState.Ground) return true;
+    public float GetValidityTime()
+    {
+        return 0f;
+    }
 
-//         else return false;
-//     }
-// }
+    public void Behaviour()
+    {
+        switch (level)
+        {
+            case 1:
+                JumpAction_lv1();
+                break;
+
+            case 2:
+                JumpAction_lv2();
+                break;
+
+            case 3:
+                JumpAction_lv3();
+                break;
+
+            default:
+                JumpAction_lv1();
+                break;
+        }
+    }
+
+    public bool Cancel()
+    {
+        // ジャンプはキャンセル不要
+        return false;
+    }
+
+    private void JumpAction_lv1()
+    {
+        if (rb == null) return;
+    
+
+        rb.linearVelocity = new Vector3(
+            rb.linearVelocity.x,
+            gameConstant.GetJumpForce(),
+            rb.linearVelocity.z
+        );
+    }
+
+    private void JumpAction_lv2()
+    {
+        JumpAction_lv1();
+    }
+
+    private void JumpAction_lv3()
+    {
+        JumpAction_lv1();
+    }
+}

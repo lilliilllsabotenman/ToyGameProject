@@ -36,10 +36,12 @@ public interface IAbility
 
 public interface AbilityBehaviour
 {
+    public void SetLevel(int level);
     public Enum IGetMyAbilityState();
     public bool IEventDriven();
     public float GetValidityTime();
     public void Behaviour();
+    public bool Cancel();
 }
 
 public interface IInteract
@@ -51,7 +53,10 @@ public interface IInteract
 public class ItemObjectBehaviour : MonoBehaviour
 {
     protected Rigidbody rb;
-    public ActionType iAction;
+    
+    [SerializeField] protected ItemType itemType;
+    [SerializeField] protected ActionType actionType;
+
 
     public virtual AbilityItemData GetAbility(GameObject obj)
     {

@@ -3,117 +3,140 @@ using System;
 
 public class CrouchAction : ItemObjectBehaviour
 {
-    // public ItemType iType;
+    [SerializeField] protected PostureState iState;
 
-    // private void Awake ()
-    // {
-    //     rb = this.GetComponent<Rigidbody>();
-    // }
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+    }
 
-    // public override AbilityItemSlot GetAbility(GameObject player)
-    // {
-    //     PlayerController playerComtroller = player.GetComponent<PlayerController>();
-    //     Collider playerCollider = playerComtroller.gameObject.GetComponent<Collider>();
-    //     CrouchComponent crouchComponent = new CrouchComponent(        
-    //         playerComtroller.playerInput,
-    //         playerCollider,
-    //         playerComtroller.playerStateManager,
-    //         player.GetComponent<BoxCollider>(),
-    //         iAction
-    //     );
+    public override AbilityItemData GetAbility(GameObject player)
+    {
+        BoxCollider playerCollider = player.GetComponent<BoxCollider>();
 
-    //     AbilityItemSlot ability = new AbilityItemSlot(
-    //         this,
-    //         crouchComponent,
-    //         this.iType
-    //     );
+        var ability = new CrouchComponent(itemType, actionType);
 
-    //     return ability;
-    // }
+        var behaviour = new CrouchBehaviour(playerCollider, iState);
+
+        return new AbilityItemData(
+            this,
+            ability,
+            behaviour,
+            itemType
+        );
+    }
 }
 
 public class CrouchComponent : IAbility
 {
-    private ActionType actionType;
     private ItemType itemType;
+    private ActionType actionType;
 
-    public ItemType GetItemType()
+    public CrouchComponent(ItemType itemType, ActionType actionType)
     {
-        return itemType;
+        this.itemType = itemType;
+        this.actionType = actionType;
     }
 
-    public ActionType GetActionType()
-    {
-        return this.actionType;
-    }
+    public ItemType GetItemType() => itemType;
 
-    public Enum ActionModifyPress()
-    {
-        return PostureState.Crouch;
-    }
+    public ActionType GetActionType() => actionType;
 
-    public Enum ActionModifyReleased()
-    {
-        return PostureState.Upright;
-    }
+    public Enum ActionModifyPress() => PostureState.Crouch;
+
+    public Enum ActionModifyReleased() => PostureState.Upright;
 }
 
-public class CrouchBehaviour
+public class CrouchBehaviour : AbilityBehaviour
 {
     private BoxCollider col;
+    private PostureState iState;
 
     private Vector3 defaultSize;
     private Vector3 defaultCenter;
 
-    public CrouchBehaviour(BoxCollider col)
+    private int level = 1; // ★デフォルト設定
+
+    public CrouchBehaviour(BoxCollider col, PostureState state)
     {
         this.col = col;
+        this.iState = state;
+
         defaultSize = col.size;
         defaultCenter = col.center;
     }
 
-    public void CrouchAction_lv1()
+    public void SetLevel(int level)
+    {
+        this.level = level;
+    }
+
+    public Enum IGetMyAbilityState() => iState;
+
+    public bool IEventDriven() => false;
+
+    public float GetValidityTime() => Mathf.Infinity;
+
+    public void Behaviour()
+    {
+        switch (level)
+        {
+            case 1:
+                CrouchAction_lv1();
+                break;
+
+            case 2:
+                CrouchAction_lv2();
+                break;
+
+            case 3:
+                CrouchAction_lv3();
+                break;
+
+            default:
+                CrouchAction_lv1();
+                break;
+        }
+    }
+
+    public bool Cancel()
+    {
+        //Todo:キャンセル必要判定の追加
+        ReleasedCollider();
+
+        return false;
+    }
+
+    private void CrouchAction_lv1()
     {
         float targetHeight = defaultSize.y / 2;
 
-        float newY;
-
-        if (Mathf.Abs(col.size.y - targetHeight) >= 0.01f)
-        {
-            newY = col.size.y + (targetHeight - col.size.y) / 5f;
-        }
-        else
-        {
-            newY = targetHeight;
-        }
+        float newY = Mathf.Abs(col.size.y - targetHeight) >= 0.01f
+            ? col.size.y + (targetHeight - col.size.y) / 5f
+            : targetHeight;
 
         ApplyHeight(newY);
     }
 
-    public void CrouchAction_lv2()
+    private void CrouchAction_lv2()
     {
-
+        // TODO: 強化版（例：さらに低く or 速く）
+        CrouchAction_lv1();
     }
 
-    public void CrouchAction_lv3()
+    private void CrouchAction_lv3()
     {
-        
+        // TODO: 最大強化
+        CrouchAction_lv1();
     }
 
-    public void ReleasedCollider()
+    private void ReleasedCollider()
     {
         float targetHeight = defaultSize.y;
 
-        float newY;
-
-        if (Mathf.Abs(col.size.y - targetHeight) >= 0.01f)
-        {
-            newY = col.size.y + (targetHeight - col.size.y) / 5f;
-        }
-        else
-        {
-            newY = targetHeight;
-        }
+        float newY = Mathf.Abs(col.size.y - targetHeight) >= 0.01f
+            ? col.size.y + (targetHeight - col.size.y) / 5f
+            : targetHeight;
 
         ApplyHeight(newY);
     }

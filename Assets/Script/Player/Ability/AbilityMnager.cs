@@ -27,8 +27,8 @@ public class AbilityItemData
 
     public AbilityItemData(
         ItemObjectBehaviour itemObject,
-        AbilityBehaviour behaviour,
         IAbility ability,
+        AbilityBehaviour behaviour,
         ItemType itemType)
     {
         if (itemObject == null) throw new ArgumentNullException();
@@ -37,8 +37,8 @@ public class AbilityItemData
         if (itemType == ItemType.None) throw new ArgumentException();
 
         this.ItemObject = itemObject;
-        this.Behaviour = behaviour;
         this.Ability = ability;
+        this.Behaviour = behaviour;
         this.itemType = itemType;
     }
 }
@@ -89,16 +89,23 @@ public class AbilityManager
     private AbilityActivator abilityActivator;
 
     private BehaviourData behaviourData; // ★追加
+    private BehaviourManager behaviourManager;
 
     public AbilityManager(
         AbilityDataBase dataBase,
+        BehaviourExecutor behaviourExecutor,
         Transform tf,
+        StateWatcher stateWatcher,
         InputResolver resolver)
     {
         this.abilityDataBase = dataBase;
 
         // ★ここで共通インスタンス作る
         behaviourData = new BehaviourData();
+        behaviourManager = new BehaviourManager(
+                    behaviourData, 
+                    behaviourExecutor,
+                    stateWatcher);
 
         this.removeItem = new ItemRemover(tf, behaviourData);
         this.abilityActivator = new AbilityActivator(resolver, behaviourData);

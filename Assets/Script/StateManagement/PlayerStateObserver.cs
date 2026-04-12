@@ -61,8 +61,6 @@ public class StateWatcher
 
     public void StateChanged(PlayerStateData state)
     {
-        Debug.Log("State Changed");
-
         // 初回は基準値セットだけ
         if (!initialized)
         {

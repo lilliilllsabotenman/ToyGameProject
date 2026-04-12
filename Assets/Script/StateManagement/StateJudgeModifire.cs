@@ -89,6 +89,21 @@ namespace StateJudgment//あとでEnumごとに名前空間分割
         }
     }
 
+    public class JumpStateJudgment : StateChangeModifire
+    {
+        public Enum SetType()
+        {
+            return PositioningState.Jump;
+        }
+
+        public bool StateJudgment(PlayerStateData state)
+        {
+            if(state.positioningState == PositioningState.Ground) return true;
+
+            else return false;
+        }
+    }
+
     public class StateChangeJudgment
     {
         public Dictionary<MovementState, StateChangeModifire> movementModifireData {get; private set;}

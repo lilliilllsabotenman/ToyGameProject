@@ -35,10 +35,9 @@ public class PlayerController : MonoBehaviour
     public GameConstantParametor gameConstantParametor;
 
     public AbilityManager abilityManager;
-    private AbilityDataBase abilityDataBase;
+    private AbilityDataBase abilityDataBase = new();
     private ItemRemover removeItem;
-    private BehaviourManager behaviourManager;
-    private BehaviourExecutor BehaviourExecutor = new();
+    private BehaviourExecutor behaviourExecutor = new();
 
     //プレイヤーの状態を制御するクラス Script/GameOption/Gamerule.cs参照
     public PlayerStateData playerStateData = new PlayerStateData();
@@ -85,7 +84,9 @@ public class PlayerController : MonoBehaviour
         //プレイヤーアクション初期化
         abilityManager = new AbilityManager(
             abilityDataBase,
+            behaviourExecutor,
             tf,
+            stateWatcher,
             resolver);
         getItemAction = new GetItemAction(abilityManager, playerInput);
         groundCollisionLogic = new GroundCollisionLogic(playerStateManager,
@@ -119,7 +120,7 @@ public class PlayerController : MonoBehaviour
         playerInputBuffer.onUpdate();
         inputWatcher.onUpdate();
         getItemAction.getAction(this.gameObject, screenCenterDetector);
-        BehaviourExecutor.OnUpdate();
+        behaviourExecutor.OnUpdate();
     }
 
     private void FixedUpdate()

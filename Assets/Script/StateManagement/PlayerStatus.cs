@@ -32,16 +32,19 @@ public class PlayerStateData
 
     public void SetMovementState(MovementState state)
     {
+        Debug.Log(state);
         movementState = state;
     }
 
     public void SetPostioningState(PositioningState state)
     {
+        Debug.Log(state);
         positioningState = state;
     }
 
     public void SetPostureState(PostureState state)
     {
+        Debug.Log(state);
         postureState = state;
     }
 }

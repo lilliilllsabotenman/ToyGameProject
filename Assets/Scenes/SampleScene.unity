@@ -152,8 +152,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5583c645e70cd6347a96d3f1ad7002e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerGlidingAction
-  iAction: 1
-  iType: 3
 --- !u!54 &104588856
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -501,7 +499,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   iAction: 1
-  iType: 0
+  itemType: 2
+  actionType: 1
+  iState: 1
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -1185,7 +1185,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   iAction: 3
-  iType: 0
+  itemType: 2
+  actionType: 3
+  iState: 1
 --- !u!1 &747548812
 GameObject:
   m_ObjectHideFlags: 0
@@ -1837,8 +1839,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 936e575065ac7cb47911bc48fd5fd047, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DashAction
-  iAction: 2
-  iType: 0
 --- !u!54 &1689892538
 Rigidbody:
   m_ObjectHideFlags: 0

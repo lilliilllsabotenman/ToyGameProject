@@ -124,9 +124,11 @@ public class BehaviourManager
     private BehaviourExecutor executor;
 
     public BehaviourManager(
+        BehaviourData data,
         BehaviourExecutor executor,
         StateWatcher watcher)
     {
+        this.data = data;
         this.executor = executor;
 
         // Stateの変更に対してEvent登録
@@ -167,6 +169,9 @@ public class BehaviourManager
 public class BehaviourExecutor
 {
     private List<AbilityBehaviour> removeBuffer = new();
+    private List<AbilityBehaviour> onFinishedBehaviour = new();
+    private List<AbilityBehaviour> CancelBehaviour = new(); //スケールする可能性が無いのでBuffer系はリスト管理
+
     private Dictionary<AbilityBehaviour, AbilityTimeChecker> onLoopBehaviour = new();
 
     public void BehaviourLoopChecker(AbilityBehaviour behaviour)
@@ -208,6 +213,16 @@ public class BehaviourExecutor
         removeBuffer.Clear();
     }
 
+    private void FinishedBehaviourRemover()
+    {
+        foreach(var finish in onFinishedBehaviour)
+        {
+            CancelBehaviour.Remove(finish);
+        }
+
+        onFinishedBehaviour.Clear();
+    }
+
     public void OnUpdate()
     {
         if(onLoopBehaviour.Count <= 0) return;
@@ -219,13 +234,29 @@ public class BehaviourExecutor
 
             if (timer.TimeCount())
             {
-                removeBuffer.Add(behaviour);
+                if (behaviour.Cancel())
+                {
+                    if (!CancelBehaviour.Contains(behaviour)) // ★追加
+                    {
+                        CancelBehaviour.Add(behaviour);
+                    }
+
+                    removeBuffer.Add(behaviour);
+                    continue;
+                }
             }
 
             behaviour.Behaviour();
         }
 
         LoopBehaviourRemover();
+
+        foreach (var cancel in CancelBehaviour)
+        {
+            if(!cancel.Cancel()) onFinishedBehaviour.Add(cancel);
+        }
+
+        FinishedBehaviourRemover();
     }
 }
 
