@@ -13,8 +13,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameKeyBindInspector keyBind;
 
     [Header("アニメーション関連設定")]
-    [Header("アニメーションデータベース")]
-    [SerializeField] private AnimationDataBase animationDataBase;
     [Header("Animator")]
     [SerializeField] private Animator animator;
     
@@ -27,7 +25,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
 
     //Modifire系
-    private VelocityUtil velocityUtil;
+    // private VelocityUtil velocityUtil;
 
     //多くが参照する基礎パラメーター、プレイヤーごとに独立
     public GameConstant Constant;
@@ -59,8 +57,6 @@ public class PlayerController : MonoBehaviour
     private InputWatcher inputWatcher;
     private InputResolver resolver;
 
-    //アニメーション系
-    private AnimationSystem animationSystem;
 
     private DefaultKeyBindData defaultData = new DefaultKeyBindData();
 
@@ -110,9 +106,6 @@ public class PlayerController : MonoBehaviour
                                                 gameConstantParametor,
                                                 playerStateManager,
                                                 wallResolver);
-        animationSystem = new AnimationSystem(animationDataBase, animator);
-
-        animationSystem.Bind(stateWatcher);
     }
 
     private void Update()
