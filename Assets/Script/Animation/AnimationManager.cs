@@ -14,18 +14,25 @@ public class AnimationData<T> where T : Enum
         value = BlendParametor;
         return isBlend;
     }
-}
+    
+    public void SetAnimationParamFloat(float param)
+    {
+    }
+}		
 
 public class AnimationDataBase
 {
     public readonly Dictionary<MovementState, AnimationData<MovementState>> movementAnimationParametor = new();
     public readonly Dictionary<PostureState, AnimationData<PostureState>> postureAnimationParametor = new();
     public readonly Dictionary<PositioningState, AnimationData<PositioningState>> positioningAnimationParametor = new();
+    
+    //Todo:
 }
 
 public class AnimationManager
 {
     private readonly Animator animator;
+    private readonly Dictionary<string, float> AnimationBlend = new();
 
     // 内部状態（とりあえず保持）
     private float speed;
@@ -51,8 +58,25 @@ public class AnimationManager
     private void OnPositioningChanged(PositioningState state)
     {
     }
+    
+    private void JudgeExecutorType<T>(AnimationData<T> data)
+    {
+    	
+    }
 }
 
-public class AnimationExecutor
-{
+public class AnimationExecutor //Todo:どこで渡す？
+{	
+	private Animator anim;
+
+	public void OnUpdate(Dictionary<string, float> data)
+	{
+		foreach(var d in data)
+		{
+			anim.SetFloat(d.Key, d.Value);
+		}
+	}
+	
+	public void Execute
+
 }
