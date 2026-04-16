@@ -1,12 +1,6 @@
 using UnityEngine;
 using System;
 
-public enum AbilitySituation
-{
-    Active,
-    Pasiv
-}
-
 public interface OnPlayerAction
 {
     public ActionType ActionType { get; }
@@ -14,6 +8,11 @@ public interface OnPlayerAction
     // 「Abilityを直接実行しない」こと
     // ここで返すのは Modifier適用など
     public Action GetAction();
+}
+
+public interface AnimationParametor
+{
+    public float GetFloatParametor();
 }
 
 public interface OnFixedUpdateAbility

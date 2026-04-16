@@ -27,7 +27,7 @@ public class PlayerController : MonoBehaviour
     //Modifire系
     // private VelocityUtil velocityUtil;
 
-    //多くが参照する基礎パラメーター、プレイヤーごとに独立
+    //多くが参照する基礎パラメーター、プレイヤーごとに独立、存在意義を疑い中
     public GameConstant Constant;
     public ConstansModify constansModify = new ConstansModify();
     public GameConstantParametor gameConstantParametor;
@@ -88,8 +88,6 @@ public class PlayerController : MonoBehaviour
         groundCollisionLogic = new GroundCollisionLogic(playerStateManager,
                                                         groundLayer);
 
-        // FIX: PlayerMoveAction 生成前に gameConstantParametor を必ず初期化する。
-        // 以前は null のまま注入される順序だったため、移動時に参照不正が起きる構成だった。
         gameConstantParametor = new GameConstantParametor(
             Constant,
             constansModify,

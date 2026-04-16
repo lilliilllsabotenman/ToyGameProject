@@ -2,30 +2,24 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 
-/// <summary>
-/// アイテム種別（キーとして使用）
-/// </summary>
-public enum ItemType
+public enum ItemType//文字通りアイテムの種類
 {
     None,
     Circle,
     Square,
     Triangle,
-    Star
+    Star,
+    Default
 }
 
-/// <summary>
-/// 「1アイテム = 1能力」の束
-/// データの最小単位
-/// </summary>
 public class AbilityItemData
 {
-    public ItemObjectBehaviour ItemObject;   // 見た目・ワールド挙動
-    public IAbility Ability;                 // ロジック本体
-    public ItemType itemType;                // 識別キー
-    public AbilityBehaviour Behaviour;       // 追加の振る舞い（補助）
+    public ItemObjectBehaviour ItemObject; 
+    public IAbility Ability;                 
+    public ItemType itemType;                
+    public AbilityBehaviour Behaviour;       
 
-    public AbilityItemData(
+    public AbilityItemData( //安全保障
         ItemObjectBehaviour itemObject,
         IAbility ability,
         AbilityBehaviour behaviour,
@@ -78,9 +72,6 @@ public class AbilityDataBase
 
 #region  AbilityManager
 
-/// <summary>
-/// アビリティ管理（オーケストレーター）
-/// </summary>
 public class AbilityManager
 {
     private AbilityDataBase abilityDataBase;
@@ -88,7 +79,7 @@ public class AbilityManager
     private ItemRemover removeItem;
     private AbilityActivator abilityActivator;
 
-    private BehaviourData behaviourData; // ★追加
+    private BehaviourData behaviourData;
     private BehaviourManager behaviourManager;
 
     public AbilityManager(
@@ -100,7 +91,6 @@ public class AbilityManager
     {
         this.abilityDataBase = dataBase;
 
-        // ★ここで共通インスタンス作る
         behaviourData = new BehaviourData();
         behaviourManager = new BehaviourManager(
                     behaviourData, 
@@ -140,20 +130,17 @@ public class AbilityManager
 #endregion
 #region AbilityActivetor
 
-/// <summary>
-/// 実行管理クラス
-/// </summary>
 public class AbilityActivator
 {
     private readonly InputResolver resolver;
-    private readonly BehaviourData behaviourData; // ★追加
+    private readonly BehaviourData behaviourData;
 
     private readonly List<AbilityItemData> activeItems = new();
     private readonly Dictionary<Type, List<AbilityItemData>> abilitiesByType = new();
 
     public AbilityActivator(
             InputResolver resolver, 
-            BehaviourData behaviourData) // ★変更
+            BehaviourData behaviourData) 
     {
         this.resolver = resolver;
         this.behaviourData = behaviourData;
@@ -172,8 +159,7 @@ public class AbilityActivator
 
         Register(itemData.Ability);
 
-        // ★ Behaviour登録
-        behaviourData.AddAbilityData(itemData.Behaviour);
+        behaviourData.AddAbilityData(itemData.Behaviour);//Behaviour側の管理に登録
     }
 
     public void DeleteItemLevel(AbilityItemData itemData)
@@ -192,8 +178,7 @@ public class AbilityActivator
 
         Unregister(itemData.Ability);
 
-        // ★ Behaviour削除
-        behaviourData.RemoveAbilityData(itemData.Behaviour);
+        behaviourData.RemoveAbilityData(itemData.Behaviour);//Behaviourから削除
     }
 
     private void Register(IAbility ability)
@@ -218,17 +203,14 @@ public class AbilityActivator
 #endregion
 #region  ItemRemover
 
-/// <summary>
-/// アイテム削除（見た目・ワールド復元）
-/// </summary>
 public class ItemRemover
 {
     private Transform tf;
-    private BehaviourData behaviourData; // ★追加
+    private BehaviourData behaviourData;
 
     public ItemRemover(
             Transform tf, 
-            BehaviourData behaviourData) // ★変更
+            BehaviourData behaviourData)
     {
         this.tf = tf;
         this.behaviourData = behaviourData;
@@ -236,7 +218,6 @@ public class ItemRemover
 
     public void Remove(AbilityItemData itemData)
     {
-        // ★ Behaviour削除（安全のためここでも）
         behaviourData.RemoveAbilityData(itemData.Behaviour);
 
         itemData.ItemObject.Restoration(tf.position);
