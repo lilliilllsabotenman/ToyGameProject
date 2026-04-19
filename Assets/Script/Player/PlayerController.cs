@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// プレイヤーに関する動作の実行を管轄する基幹クラス
@@ -16,7 +16,6 @@ public class PlayerController : MonoBehaviour
     [Header("Animator")]
     [SerializeField] private Animator animator;
     
-
     [Header("壁の張り付き防止用レイヤーマスク")]
     [SerializeField] private LayerMask wallMask;
 
@@ -46,7 +45,7 @@ public class PlayerController : MonoBehaviour
     private PlayerMoveAction playerMoveAction; 
     private GetItemAction getItemAction;
     private GroundCollisionLogic groundCollisionLogic;
-    private WallCollisionResolver wallResolver;
+    public WallCollisionResolver wallResolver;
 
     //キーバインド系のクラス全般　Script.GameOption.GameKyeBind.cs参照
     public PlayerInputIntent playerInput;//最終的な入力を抽象化して渡すクラス

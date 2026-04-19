@@ -1,29 +1,56 @@
-// using UnityEngine;
+using UnityEngine;
+using System;
+using System.Collections.Generic;
+using AnimationParametorObserver;
 
-// public class PlayerAnimationEntry : MonoBehaviour
-// {
-//     [SerializeField] private Animator anim;
-//     [SerializeField] private GameObject player;
+public class PlayerAnimationEntry : MonoBehaviour
+{
+    [SerializeField] private GameObject player;
+    [SerializeField] private Animator animator;
+    [SerializeField] private AnimationParametorDataBase dataBase;
 
-//     private AnimationManager manager;
-//     private AnimationContext context;
+    private AnimationDataBase animationDataBase;
+    private AnimationManager animationManager;
+    private AnimationExecutor animationExecutor;
 
-//     void Start()
-//     {
-//         if(anim == null) return;
-//         if(player = null) return;
+    void Start()
+    {
+        PlayerController playerController = player.GetComponent<PlayerController>();
 
-//         StateWatcher watcher = player.GetComponent<PlayerController>().stateWatcher;
+        animationDataBase = new AnimationDataBase(dataBase, animator);
 
-//         context = new AnimationContext();
+        animationExecutor = new AnimationExecutor(
+            animator,
+            fParamInit()
+        );
 
-//         var executor = new AnimationExecutor(anim);
+        animationManager = new AnimationManager(
+            playerController.stateWatcher,
+            animationDataBase,
+            animationExecutor
+        );
+    }
 
-//         manager = new AnimationManager(executor, context, watcher);
-//     }
+    private Dictionary<string, AnimationParametorModify> fParamInit()
+    {
+        BoxCollider col = player.GetComponent<BoxCollider>();
 
-//     void Update()
-//     {
-//         manager.Update();
-//     }
-// }
+        SpeedModify speed = new (player.GetComponent<Rigidbody>());
+        CrochModify croch = new (
+            col,
+            col.bounds.size.y,
+            col.bounds.size.y / 10
+            );
+
+        return new Dictionary<string, AnimationParametorModify>{
+            {"Speed", speed},
+            {"CrouchLevel", croch}
+        };
+    }
+
+    private void Update()
+    {
+        if(animationExecutor == null) return;
+        animationExecutor.onUpdate();
+    }
+}

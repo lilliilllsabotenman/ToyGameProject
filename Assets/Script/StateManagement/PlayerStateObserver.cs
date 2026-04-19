@@ -7,7 +7,7 @@ using System.Linq;
 /// 状態監視用のクラス
 /// イベントで受け取った変化を抽象化してほかクラスに通知する。
 /// </summary>
-public class StateWatcher
+public class StateWatcher 
 {
     private readonly Dictionary<Type, Delegate> _events;
 

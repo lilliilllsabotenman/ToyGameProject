@@ -10,7 +10,7 @@ public interface OnPlayerAction
     public Action GetAction();
 }
 
-public interface AnimationParametor
+public interface AnimationParametorModify
 {
     public float GetFloatParametor();
 }

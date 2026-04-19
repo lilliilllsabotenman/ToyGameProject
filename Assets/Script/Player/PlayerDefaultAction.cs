@@ -189,7 +189,6 @@ public class GetItemAction
         {
             ItemObjectBehaviour item = obj.GetComponent<ItemObjectBehaviour>() ?? obj.GetComponentInParent<ItemObjectBehaviour>();
             if(item == null) return;
-            
             AbilityItemData iAbility = item.GetAbility(PlayerObject);
 
             if(abilityManager.TryAddAbility(iAbility)) 

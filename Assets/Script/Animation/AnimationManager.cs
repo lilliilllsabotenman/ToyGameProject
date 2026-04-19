@@ -2,136 +2,199 @@
 using System.Collections.Generic;
 using System;
 
-public class AnimationData
-{
-    public string Parametor;
-    public bool useFloat;
-    public AnimationParametor fParam;
-}
-
 public class AnimationDataBase
 {
-    private Dictionary<MovementState, AnimationData> moveData = new Dictionary<MovementState, AnimationData>();
-    private Dictionary<PositioningState, AnimationData> positData = new Dictionary<PositioningState, AnimationData>();
-    private Dictionary<PostureState, AnimationData> postData = new Dictionary<PostureState, AnimationData>();
+    private Dictionary<MovementState, string> moveData = new();
+    private Dictionary<PositioningState, string> positData = new();
+    private Dictionary<PostureState, string> postData = new();
 
-    public AnimationDataBase()
+    public AnimationDataBase(AnimationParametorDataBase source, Animator animator)
     {
+        foreach (pData d in source.data)
+        {
+            if (d == null || string.IsNullOrWhiteSpace(d.parametorName)) continue;
+
+            if (d.useMovement && !moveData.ContainsKey(d.move))
+                moveData.Add(d.move, d.parametorName);
+
+            if (d.usePositioning && !positData.ContainsKey(d.posit))
+                positData.Add(d.posit, d.parametorName);
+
+            if (d.usePosture && !postData.ContainsKey(d.post))
+                postData.Add(d.post, d.parametorName);
+        }
+
+        Validate(animator);
     }
 
-    public string GetBollParametor<T>(T state) where T : Enum
+    private void Validate(Animator animator)
+    {
+        if (animator == null)
+        {
+            Debug.LogError("[Animation] Animator is null");
+            return;
+        }
+
+        foreach (var kv in moveData)
+            Check(animator, kv.Value, $"Movement:{kv.Key}");
+
+        foreach (var kv in positData)
+            Check(animator, kv.Value, $"Positioning:{kv.Key}");
+
+        foreach (var kv in postData)
+            Check(animator, kv.Value, $"Posture:{kv.Key}");
+    }
+
+    private void Check(Animator animator, string param, string context)
+    {
+        if (string.IsNullOrWhiteSpace(param))
+        {
+            Debug.LogWarning($"[Animation] Empty param ({context})");
+            return;
+        }
+
+        bool found = false;
+        foreach (var p in animator.parameters)
+        {
+            if (p.name == param)
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            Debug.LogError($"[Animation] Param NOT FOUND: [{param}] ({context})");
+        }
+    }
+
+    public string GetParam<T>(T state) where T : Enum
     {
         if (state is MovementState m && moveData.TryGetValue(m, out var mData))
-            return mData.Parametor;
+            return mData;
 
         if (state is PositioningState p && positData.TryGetValue(p, out var pData))
-            return pData.Parametor;
+            return pData;
 
         if (state is PostureState po && postData.TryGetValue(po, out var poData))
-            return poData.Parametor;
+            return poData;
 
         return null;
-    }
-
-    public bool GetFloatRefarence<T>(T state, out AnimationParametor value) where T : Enum
-    {
-        value = null;
-
-        if (state is MovementState m && moveData.TryGetValue(m, out var mData) && mData.useFloat)
-        {
-            value = mData.fParam;
-            return true;
-        }
-
-        if (state is PositioningState p && positData.TryGetValue(p, out var pData) && pData.useFloat)
-        {
-            value = pData.fParam;
-            return true;
-        }
-
-        if (state is PostureState po && postData.TryGetValue(po, out var poData) && poData.useFloat)
-        {
-            value = poData.fParam;
-            return true;
-        }
-
-        return false;
     }
 }
 
 public class AnimationManager
 {
-    private List<Enum> RemoveAnimationBuffer = new List<Enum>();
-    private List<Enum> RunningAnimation = new List<Enum>();
+    private Dictionary<Type, string> RunningAnimation = new Dictionary<Type, string>();
+
+    private AnimationDataBase animationDataBase;
+    private AnimationExecutor animationExecutor;
     
-    public AnimationManager()
-    {}
+    public AnimationManager(
+        StateWatcher stateWatcher,
+        AnimationDataBase animationDataBase,
+        AnimationExecutor animationExecutor
+    )
+    {
+        this.animationDataBase = animationDataBase;
+        this.animationExecutor = animationExecutor;
+
+        stateWatcher.Subscribe<MovementState>(InvokeAnimationMove);
+        stateWatcher.Subscribe<PositioningState>(InvokeAnimationPosit);
+        stateWatcher.Subscribe<PostureState>(InvokeAnimationPost);
+    }
 
     public void InvokeAnimationMove(MovementState state)
     {
-        AnimationDuplicationChecker(state);
-        RunningAnimation.Add(state);
+        string param = animationDataBase.GetParam<MovementState>(state);
+
+        if(string.IsNullOrEmpty(param))
+        {
+            BreakAnimation(state.GetType());
+            return;
+        }
+        
+        AnimationDuplicationChecker(state.GetType(), param);
     }
 
     public void InvokeAnimationPosit(PositioningState state)
     {
-        AnimationDuplicationChecker(state);
-        RunningAnimation.Add(state);
+        string param = animationDataBase.GetParam<PositioningState>(state);
+
+        if(string.IsNullOrEmpty(param))
+        {
+            BreakAnimation(state.GetType());
+            return;
+        }
+        
+        AnimationDuplicationChecker(state.GetType(), param);
     }
 
     public void InvokeAnimationPost(PostureState state)
     {
-        AnimationDuplicationChecker(state);
-        RunningAnimation.Add(state);
+        string param = animationDataBase.GetParam<PostureState>(state);
+
+        Debug.Log(state);
+
+        if(string.IsNullOrEmpty(param))
+        {
+            BreakAnimation(state.GetType());
+            return;
+        }
+        
+        AnimationDuplicationChecker(state.GetType(), param);
     }
 
-    public void AnimationDuplicationChecker(Enum state)
+    public void AnimationDuplicationChecker(Type state, string param)
     {
-        Type type = state.GetType();
+        if(RunningAnimation.TryGetValue(state, out string p))
+            animationExecutor.setFalse(p);
 
-        for (int i = RunningAnimation.Count - 1; i >= 0; i--)
-        {
-            if (RunningAnimation[i].GetType() == type)
-            {
-                RemoveAnimationBuffer.Add(RunningAnimation[i]);
-            }
-        }
+        animationExecutor.Execute(p);
 
-        foreach (var r in RemoveAnimationBuffer)
-        {
-            RunningAnimation.Remove(r);
-        }
+        RunningAnimation[state] = param;
+    }
 
-        RemoveAnimationBuffer.Clear();
+    public void BreakAnimation(Type t)
+    {
+        if(RunningAnimation.TryGetValue(t, out string param))
+            animationExecutor.setFalse(param);
+
+        RunningAnimation.Remove(t);
     }
 }
 
-public class AniationExecutor
+public class AnimationExecutor
 {
-    private List<AnimationParametor> RemoveAnimationBuffer = new List<AnimationParametor>();
-    private List<AnimationParametor> RunningAnimation = new List<AnimationParametor>();
+    private Animator animator;
+    private Dictionary<string, AnimationParametorModify> paramModify;
+
+    public AnimationExecutor(
+        Animator animator,
+        Dictionary<string, AnimationParametorModify> paramModify)
+    {
+        this.animator = animator;
+        this.paramModify = paramModify;
+    }
 
     public void Execute(string param)
     {
-        if (string.IsNullOrEmpty(param)) return;
-
-        var animator = UnityEngine.Object.FindFirstObjectByType<Animator>();
         if (animator == null) return;
 
         animator.SetBool(param, true);
     }
 
-    public void OnUpDateExeCute(string param, AnimationParametor fParam)
+    public void setFalse(string param)
     {
-        if (string.IsNullOrEmpty(param) || fParam == null) return;
-
-        var animator = UnityEngine.Object.FindFirstObjectByType<Animator>();
-        if (animator == null) return;
-
-        animator.SetFloat(param, fParam.GetFloatParametor());
+        animator.SetBool(param, false);
     }
 
     public void onUpdate()
     {
+        foreach(var p in paramModify)
+        {
+            animator.SetFloat(p.Key, p.Value.GetFloatParametor());
+        }
     }
 }
