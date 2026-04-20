@@ -20,7 +20,7 @@ public class InputWatcher
 
     public void onUpdate()
     {
-        foreach (ActionType action in Enum.GetValues(typeof(ActionType)))
+        foreach (ActionType action in Enum.GetValues(typeof(ActionType)))//抽象化したからできる荒業
         {
             if (intent.IsPressed(action))
             {

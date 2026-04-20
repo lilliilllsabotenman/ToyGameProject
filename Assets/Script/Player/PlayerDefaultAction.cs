@@ -58,7 +58,6 @@ public class PlayerMoveAction
     private PlayerStateManager playerStateManager;
 
     private DefaultMoveBehaviour defaultMoveBehaviour;
-    private DashMoveBehaviour dashMoveBehaviour;
 
     private WallCollisionResolver wallResolver;
 
@@ -78,7 +77,6 @@ public class PlayerMoveAction
         this.wallResolver = wallResolver;
 
         defaultMoveBehaviour = new DefaultMoveBehaviour(cam, rb, gameConstant, wallResolver);
-        dashMoveBehaviour = new DashMoveBehaviour(cam, rb, gameConstant);
     }
 
     public void RegisterCollision(Collision collision)
@@ -112,10 +110,12 @@ public class PlayerMoveAction
         }
 
         if (playerStateManager.stateData.movementState == MovementState.Move)
-            defaultMoveBehaviour.DefaultMove(h, v);
+            defaultMoveBehaviour.DefaultMove(h, v, 1);
 
-        if (playerStateManager.stateData.movementState == MovementState.Dash)
-            dashMoveBehaviour.DashMove(h, v);
+        else if (playerStateManager.stateData.movementState == MovementState.Dash)
+        {
+            defaultMoveBehaviour.DefaultMove(h, v, 2);
+        }
     }
 }
 
@@ -139,12 +139,12 @@ public class DefaultMoveBehaviour
         this.wallResolver = wallResolver;
     }
 
-    public void DefaultMove(float h, float v)
+    public void DefaultMove(float h, float v, float magnification)
     {
         Vector3 camForward = Vector3.Scale(cam.forward, new Vector3(1, 0, 1)).normalized;
         Vector3 camRight   = Vector3.Scale(cam.right,   new Vector3(1, 0, 1)).normalized;
 
-        Vector3 moveDir = camForward * v + camRight * h;
+        Vector3 moveDir = camForward * v + camRight * h * magnification;
         moveDir = Vector3.ClampMagnitude(moveDir, 1f);
 
         Vector3 velocity = new Vector3(
@@ -169,50 +169,6 @@ public class DefaultMoveBehaviour
     }
 }
 
-public class DashMoveBehaviour
-{
-    private Transform cam;
-    private Rigidbody rb;
-    private GameConstantParametor gameConstant;
-
-    public DashMoveBehaviour(Transform cam, Rigidbody rb, GameConstantParametor gameConstant)
-    {
-        this.cam = cam;
-        this.rb = rb;
-        this.gameConstant = gameConstant;
-    }
-
-    public void DashMove(float h, float v)
-    {
-        // カメラの forward/right をXZ平面に投影
-        Vector3 camForward = Vector3.Scale(cam.forward, new Vector3(1, 0, 1)).normalized;
-        Vector3 camRight   = Vector3.Scale(cam.right,   new Vector3(1, 0, 1)).normalized;
-
-        // 入力をカメラ基準に変換
-        Vector3 moveDir = camForward * v + camRight * h;
-
-        // 斜め移動の速度調整
-        moveDir = Vector3.ClampMagnitude(moveDir, 1f);
-
-        // 現在のY速度は維持
-        Vector3 velocity = new Vector3(
-            moveDir.x * gameConstant.GetMoveSpeed(),
-            rb.linearVelocity.y,
-            moveDir.z * gameConstant.GetMoveSpeed()
-        );
-
-        rb.linearVelocity = velocity;
-
-        // ★ カメラ方向にプレイヤーを回転（Y軸のみ）
-        if (moveDir.sqrMagnitude > 0.01f)
-        {
-            Vector3 lookDir = new Vector3(moveDir.x, 0f, moveDir.z);
-            Quaternion targetRot = Quaternion.LookRotation(lookDir);
-            rb.transform.rotation = Quaternion.Slerp(rb.transform.rotation, targetRot, 10f * Time.deltaTime);
-        }
-    }
-}
-
 public class GetItemAction
 {
     private AbilityManager abilityManager;
@@ -233,7 +189,6 @@ public class GetItemAction
         {
             ItemObjectBehaviour item = obj.GetComponent<ItemObjectBehaviour>() ?? obj.GetComponentInParent<ItemObjectBehaviour>();
             if(item == null) return;
-            
             AbilityItemData iAbility = item.GetAbility(PlayerObject);
 
             if(abilityManager.TryAddAbility(iAbility)) 
@@ -241,37 +196,5 @@ public class GetItemAction
                 item.SuccessJoinItem(); 
             }
         }
-    }
-}
-
-public class VelocityUtil
-{
-    public FloatWrapper speed = new();
-    public Rigidbody rigidBody;
-    public AnimationModifireType type = AnimationModifireType.speed;
-
-    public VelocityUtil(
-            Rigidbody rigidBody,
-            AnimationModifire animationModifire)
-    {
-        this.rigidBody = rigidBody;
-        animationModifire.AddModifire(type, speed);
-    }
-
-    public void MoveDriver(float maxSpeed)
-    {
-        Vector3 v = rigidBody.linearVelocity;
-        v.y = 0f;
-
-        float speed = v.magnitude;
-
-        // デッドゾーン
-        if (speed < 0.01f)
-            speed = 0f;
-
-        float normalized = Mathf.Clamp01(speed / maxSpeed);
-
-        // スムージング
-        this.speed.value = Mathf.Lerp(this.speed.value, normalized, Time.deltaTime * 10f);
     }
 }

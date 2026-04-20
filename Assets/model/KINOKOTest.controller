@@ -94,7 +94,7 @@ AnimatorStateTransition:
     m_ConditionEvent: Jump
     m_EventTreshold: 0
   - m_ConditionMode: 2
-    m_ConditionEvent: Is Ground
+    m_ConditionEvent: Ground
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -2388609707131244397}
@@ -317,7 +317,7 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
-  - m_Name: Is Ground
+  - m_Name: Ground
     m_Type: 4
     m_DefaultFloat: 0
     m_DefaultInt: 0
@@ -359,6 +359,12 @@ AnimatorController:
     m_DefaultInt: 0
     m_DefaultBool: 0
     m_Controller: {fileID: 9100000}
+  - m_Name: Stand
+    m_Type: 4
+    m_DefaultFloat: 0
+    m_DefaultInt: 0
+    m_DefaultBool: 0
+    m_Controller: {fileID: 9100000}
   m_AnimatorLayers:
   - serializedVersion: 5
     m_Name: Base Layer
@@ -389,13 +395,13 @@ AnimatorStateMachine:
     m_Position: {x: -150, y: 400, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -2388609707131244397}
-    m_Position: {x: 60, y: 160, z: 0}
+    m_Position: {x: 60, y: 140, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -4700802954672626836}
     m_Position: {x: 50, y: 270, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -5103178078867973290}
-    m_Position: {x: -190, y: 80, z: 0}
+    m_Position: {x: -190, y: 40, z: 0}
   - serializedVersion: 1
     m_State: {fileID: 3287265584812547172}
     m_Position: {x: -440, y: 400, z: 0}
@@ -501,7 +507,7 @@ AnimatorStateTransition:
   m_Name: 
   m_Conditions:
   - m_ConditionMode: 1
-    m_ConditionEvent: Is Ground
+    m_ConditionEvent: Ground
     m_EventTreshold: 0
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: -4700802954672626836}

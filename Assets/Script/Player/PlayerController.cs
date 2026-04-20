@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// プレイヤーに関する動作の実行を管轄する基幹クラス
@@ -13,12 +13,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameKeyBindInspector keyBind;
 
     [Header("アニメーション関連設定")]
-    [Header("アニメーションデータベース")]
-    [SerializeField] private AnimationDataBase animationDataBase;
     [Header("Animator")]
     [SerializeField] private Animator animator;
     
-
     [Header("壁の張り付き防止用レイヤーマスク")]
     [SerializeField] private LayerMask wallMask;
 
@@ -27,9 +24,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
 
     //Modifire系
-    private VelocityUtil velocityUtil;
+    // private VelocityUtil velocityUtil;
 
-    //多くが参照する基礎パラメーター、プレイヤーごとに独立
+    //多くが参照する基礎パラメーター、プレイヤーごとに独立、存在意義を疑い中
     public GameConstant Constant;
     public ConstansModify constansModify = new ConstansModify();
     public GameConstantParametor gameConstantParametor;
@@ -48,7 +45,7 @@ public class PlayerController : MonoBehaviour
     private PlayerMoveAction playerMoveAction; 
     private GetItemAction getItemAction;
     private GroundCollisionLogic groundCollisionLogic;
-    private WallCollisionResolver wallResolver;
+    public WallCollisionResolver wallResolver;
 
     //キーバインド系のクラス全般　Script.GameOption.GameKyeBind.cs参照
     public PlayerInputIntent playerInput;//最終的な入力を抽象化して渡すクラス
@@ -59,8 +56,6 @@ public class PlayerController : MonoBehaviour
     private InputWatcher inputWatcher;
     private InputResolver resolver;
 
-    //アニメーション系
-    private AnimationSystem animationSystem;
 
     private DefaultKeyBindData defaultData = new DefaultKeyBindData();
 
@@ -92,8 +87,6 @@ public class PlayerController : MonoBehaviour
         groundCollisionLogic = new GroundCollisionLogic(playerStateManager,
                                                         groundLayer);
 
-        // FIX: PlayerMoveAction 生成前に gameConstantParametor を必ず初期化する。
-        // 以前は null のまま注入される順序だったため、移動時に参照不正が起きる構成だった。
         gameConstantParametor = new GameConstantParametor(
             Constant,
             constansModify,
@@ -110,9 +103,6 @@ public class PlayerController : MonoBehaviour
                                                 gameConstantParametor,
                                                 playerStateManager,
                                                 wallResolver);
-        animationSystem = new AnimationSystem(animationDataBase, animator);
-
-        animationSystem.Bind(stateWatcher);
     }
 
     private void Update()

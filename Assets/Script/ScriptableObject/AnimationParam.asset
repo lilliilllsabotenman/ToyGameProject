@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: AnimationParam
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationParametorDataBase
+  data:
+  - useMovement: 0
+    move: 0
+    usePositioning: 0
+    posit: 0
+    usePosture: 1
+    post: 1
+    parametorName: Crouch
+  - useMovement: 1
+    move: 1
+    usePositioning: 0
+    posit: 0
+    usePosture: 0
+    post: 0
+    parametorName: Move
+  - useMovement: 1
+    move: 2
+    usePositioning: 0
+    posit: 0
+    usePosture: 0
+    post: 0
+    parametorName: Move
+  - useMovement: 1
+    move: 0
+    usePositioning: 0
+    posit: 0
+    usePosture: 0
+    post: 1
+    parametorName: 

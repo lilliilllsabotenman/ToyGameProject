@@ -236,7 +236,7 @@ public class BehaviourExecutor
             {
                 if (behaviour.Cancel())
                 {
-                    if (!CancelBehaviour.Contains(behaviour)) // ★追加
+                    if (!CancelBehaviour.Contains(behaviour)) 
                     {
                         CancelBehaviour.Add(behaviour);
                     }

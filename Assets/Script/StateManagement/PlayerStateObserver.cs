@@ -7,9 +7,8 @@ using System.Linq;
 /// 状態監視用のクラス
 /// イベントで受け取った変化を抽象化してほかクラスに通知する。
 /// </summary>
-public class StateWatcher
+public class StateWatcher 
 {
-    // 型ごとのイベントを保持
     private readonly Dictionary<Type, Delegate> _events;
 
     private MovementState moveState;
@@ -24,10 +23,7 @@ public class StateWatcher
         _events = new Dictionary<Type, Delegate>();
     }
 
-    /// <summary>
-    /// ジェネリックでイベント登録
-    /// </summary>
-    public void Subscribe<T>(Action<T> action) where T : Enum
+    public void Subscribe<T>(Action<T> action) where T : Enum // 登録
     {
         Type t = typeof(T);
 
@@ -35,7 +31,7 @@ public class StateWatcher
             t != typeof(PostureState) &&
             t != typeof(PositioningState))
         {
-            Debug.LogError("だから型安全を確保しろって言ったんだ");
+            Debug.LogError("StateWatcherに変なの入った");
             return;
         }
 
@@ -48,9 +44,7 @@ public class StateWatcher
             _events[t] = action;
         }
     }
-    /// <summary>
-    /// イベント発火（内部用）
-    /// </summary>
+
     private void Invoke<T>(T state) where T : Enum
     {
         if (_events.TryGetValue(typeof(T), out var del))

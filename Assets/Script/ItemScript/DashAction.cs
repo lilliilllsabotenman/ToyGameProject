@@ -1,79 +1,145 @@
-// using UnityEngine;
+using UnityEngine;
+using System;
 
-// public class DashAction : ItemObjectBehaviour
-// {
-//     public ItemType iType;
+public class DashAction : ItemObjectBehaviour
+{
+    public MovementState iState;
 
-//     private void Awake()
-//     {
-//         rb = this.GetComponent<Rigidbody>();
-//     }
+    private void Awake()
+    {
+        rb = this.GetComponent<Rigidbody>();
+    }
 
-//     public override AbilityItemSlot GetAbility(GameObject player)
-//     {
-//         PlayerController playerController = player.GetComponent<PlayerController>();
-//         DashComponent dashComponent = new DashComponent(playerController.playerStateManager,
-//                                                         playerController.playerInput,
-//                                                         iAction);
+    public override AbilityItemData GetAbility(GameObject player)
+    {
+        PlayerController pc = player.GetComponent<PlayerController>();
 
-//         AbilityItemSlot ability = new AbilityItemSlot(
-//             this,
-//             dashComponent,
-//             this.iType
-//         );
+        DashComponent ability = new DashComponent(itemType, actionType);
 
-//         return ability;
-//     }
-// }
+        DashBehaviour behaviour = new DashBehaviour(
+            player.transform,                     
+            player.GetComponent<Rigidbody>(),     
+            pc.gameConstantParametor,                      
+            pc.wallResolver                       
+        );
 
-// public class DashComponent : OnFixedUpdateAbility, IAbility
-// {
-//     private AbilitySituation isSituation = AbilitySituation.Pasiv;
+        return new AbilityItemData(
+            this,
+            ability,
+            behaviour,  
+            itemType
+        );
+    }
+}
 
-//     private PlayerStateManager playerState;
-//     private PlayerInputIntent playerInput;
-//     private ActionType iAction;
+public class DashComponent : IAbility
+{
+    private ItemType itemType;
+    private ActionType actionType;
 
-//     private DashStateJudgment dashStateJudgment = new DashStateJudgment();
+    public DashComponent(ItemType itemType, ActionType actionType)
+    {
+        this.itemType = itemType;
+        this.actionType = actionType;
+    }
 
-//     private int level = 1;
+    public ItemType GetItemType() => itemType;
 
-//     public DashComponent(PlayerStateManager playerState,
-//                          PlayerInputIntent playerInput,
-//                          ActionType iAction)
-//     {
-//         this.playerState = playerState;
-//         this.playerInput = playerInput;
-//         this.iAction = iAction;
-//     }
+    public ActionType GetActionType() => actionType;
 
-//     public void SetLevel(int level)//レベル２以降の挙動について仕様を決めましょう。
-//     {
-//         this.level = level;
-//     }
+    public Enum ActionModifyPress() => MovementState.Dash;
 
-//     public void SetActive()
-//     {
-//         isSituation = AbilitySituation.Active;
-//     }
+    public Enum ActionModifyReleased() => MovementState.Stand;
+}
 
-//     public void OnFixedUpdate()
-//     {   
-//         if (isSituation == AbilitySituation.Pasiv) return;
+public class DashBehaviour : AbilityBehaviour
+{
+    private Transform cam;
+    private Rigidbody rb;
+    private GameConstantParametor gameConstant;
+    private WallCollisionResolver wallResolver;
 
-//         if(playerInput.IsPressed(iAction))
-//         {
-//             playerState.TryMovementStateChange(MovementState.Dash, dashStateJudgment);
-//         }
-//     }
-// }
+    private int level = 1;
 
-// public class DashStateJudgment : IStateJudge
-// {
-//     public bool StateJudgment(PlayerStateData state)
-//     {
-//         if(state.positioningState != PositioningState.Ground) return false;
+    private float elapsedTime = 0f;   // ★追加
+    private bool isDashing = true;    // ★追加
 
-//         else return true;
-//     }
-// }
+    public DashBehaviour(
+        Transform cam,
+        Rigidbody rb,
+        GameConstantParametor gameConstant,
+        WallCollisionResolver wallResolver)
+    {
+        this.cam = cam;
+        this.rb = rb;
+        this.gameConstant = gameConstant;
+        this.wallResolver = wallResolver;
+    }
+
+    public void SetLevel(int level)
+    {
+        this.level = level;
+    }
+
+    public Enum IGetMyAbilityState() => MovementState.Dash;
+
+    public bool IEventDriven() => false;
+
+    public float GetValidityTime() => 0.2f; // ★短時間化
+
+    public void Behaviour()
+    {
+        if (!isDashing) return;
+
+        elapsedTime += Time.deltaTime;
+
+        ExecuteDash();
+
+        if (elapsedTime >= GetValidityTime())
+        {
+            Cancel();
+        }
+    }
+
+    public bool Cancel()
+    {
+        isDashing = false;
+
+        // 軽く減速（急停止防止）
+        rb.linearVelocity = new Vector3(
+            rb.linearVelocity.x * 0.5f,
+            rb.linearVelocity.y,
+            rb.linearVelocity.z * 0.5f
+        );
+
+        return true;
+    }
+
+    private void ExecuteDash()
+    {
+        Vector3 camForward = Vector3.Scale(cam.forward, new Vector3(1, 0, 1)).normalized;
+
+        float dashSpeed = gameConstant.GetMoveSpeed() * GetDashMultiplier();
+
+        Vector3 velocity = new Vector3(
+            camForward.x * dashSpeed,
+            rb.linearVelocity.y,
+            camForward.z * dashSpeed
+        );
+
+        velocity = wallResolver.Resolve(velocity);
+
+        rb.linearVelocity = velocity;
+    }
+
+    private float GetDashMultiplier()
+    {
+        return level switch
+        {
+            1 => 2.0f,
+            2 => 2.5f,
+            3 => 3.0f,
+            _ => 2.0f
+        };
+    }
+}
