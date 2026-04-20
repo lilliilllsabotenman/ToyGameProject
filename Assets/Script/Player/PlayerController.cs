@@ -44,7 +44,7 @@ public class PlayerController : MonoBehaviour
     //プレイヤーのデフォルト動作を規定したクラス、Script/Player/PlayerDefaultAction.cs参照
     private PlayerMoveAction playerMoveAction; 
     private GetItemAction getItemAction;
-    private GroundCollisionLogic groundCollisionLogic;
+    private AutoStateChanged autoStateChanged;
     public WallCollisionResolver wallResolver;
 
     //キーバインド系のクラス全般　Script.GameOption.GameKyeBind.cs参照
@@ -84,7 +84,7 @@ public class PlayerController : MonoBehaviour
             stateWatcher,
             resolver);
         getItemAction = new GetItemAction(abilityManager, playerInput);
-        groundCollisionLogic = new GroundCollisionLogic(playerStateManager,
+        autoStateChanged = new AutoStateChanged(playerStateManager,
                                                         groundLayer);
 
         gameConstantParametor = new GameConstantParametor(
@@ -111,6 +111,8 @@ public class PlayerController : MonoBehaviour
         inputWatcher.onUpdate();
         getItemAction.getAction(this.gameObject, screenCenterDetector);
         behaviourExecutor.OnUpdate();
+
+        Debug.Log(playerStateData.positioningState);
     }
 
     private void FixedUpdate()
@@ -125,6 +127,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnCollisionEnter (Collision collision)
     {
+        autoStateChanged.CheckLanding(collision);
     } 
 
     private void OnCollisionStay (Collision collision)

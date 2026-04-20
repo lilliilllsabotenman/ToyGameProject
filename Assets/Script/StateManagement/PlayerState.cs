@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System;
+using StateJudgment;
 
 public enum MovementState
 {
@@ -52,10 +53,10 @@ public class PlayerStateData
 public class PlayerStateManager
 {
     public PlayerStateData stateData { get; private set; }
+    public event Action<PlayerStateData> OnStateChanged;
 
     private Dictionary<Type, Func<Enum, bool>> stateChanged;
-
-    public event Action<PlayerStateData> OnStateChanged;
+    private StateChangeJudgment stateJudge = new();
 
     public PlayerStateManager(PlayerStateData stateData)
     {
@@ -95,22 +96,31 @@ public class PlayerStateManager
     public bool movementChanged(MovementState state)
     {
         // FIX: State value was never written before; movement stayed Stand and blocked PlayerDefaultAction.
-        if (stateData.movementState == state) return false;
-        stateData.SetMovementState(state);
-        return true;
+        if (stateJudge.GetStateModify<MovementState>(state, stateData)) 
+        {
+            stateData.SetMovementState(state);
+            return true;
+        }
+        else return false;
     }
 
     public bool positioningChanged(PositioningState state)
     {
-        if (stateData.positioningState == state) return false;
-        stateData.SetPostioningState(state);
-        return true;
+        if (stateJudge.GetStateModify<PositioningState>(state, stateData)) 
+        {
+            stateData.SetPostioningState(state);
+            return true;
+        }
+        else return false;
     }
 
     public bool postureChanged(PostureState state)
     {
-        if (stateData.postureState == state) return false;
-        stateData.SetPostureState(state);
-        return true;
+        if (stateJudge.GetStateModify<PostureState>(state, stateData)) 
+        {
+            stateData.SetPostureState(state);
+            return true;
+        }
+        else return false;
     }
 }

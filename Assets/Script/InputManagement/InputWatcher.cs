@@ -60,7 +60,8 @@ public class InputResolver
     {
         if (AbilityActionPress.TryGetValue(type, out var ability))
         {
-            stateManager.TryChangeState(ability.ActionModifyPress());
+            Enum state = ability.ActionModifyPress();
+            stateManager.TryChangeState(state);
         }
     }
 
@@ -68,7 +69,8 @@ public class InputResolver
     {
         if (AbilityActionRelease.TryGetValue(type, out var ability))
         {
-            stateManager.TryChangeState(ability.ActionModifyReleased());
+            Enum state = ability.ActionModifyReleased();
+            stateManager.TryChangeState(state); //何かしらNullチェックないし、変更しない方法について考える
         }
     }
 

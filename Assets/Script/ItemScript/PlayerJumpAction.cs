@@ -62,7 +62,7 @@ public class JumpComponent : IAbility
 
     public Enum ActionModifyReleased()
     {
-        return PositioningState.Ground;
+        return PositioningState.Jump;//これカス、何とかしないといけない。
     }
 }
 
