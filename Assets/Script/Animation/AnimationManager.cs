@@ -12,7 +12,7 @@ public class AnimationDataBase
     {
         foreach (pData d in source.data)
         {
-            if (d == null || string.IsNullOrWhiteSpace(d.parametorName)) continue;
+            // if (d == null || string.IsNullOrWhiteSpace(d.parametorName)) continue;
 
             if (d.useMovement && !moveData.ContainsKey(d.move))
                 moveData.Add(d.move, d.parametorName);
@@ -47,26 +47,21 @@ public class AnimationDataBase
 
     private void Check(Animator animator, string param, string context)
     {
-        if (string.IsNullOrWhiteSpace(param))
-        {
-            Debug.LogWarning($"[Animation] Empty param ({context})");
-            return;
-        }
+        // if (string.IsNullOrWhiteSpace(param))
+        // {
+        //     Debug.LogWarning($"[Animation] Empty param ({context})");
+        //     return;
+        // }
 
-        bool found = false;
-        foreach (var p in animator.parameters)
-        {
-            if (p.name == param)
-            {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found)
-        {
-            Debug.LogError($"[Animation] Param NOT FOUND: [{param}] ({context})");
-        }
+        // bool found = false;
+        // foreach (var p in animator.parameters)
+        // {
+        //     if (p.name == param)
+        //     {
+        //         found = true;
+        //         break;
+        //     }
+        // }
     }
 
     public string GetParam<T>(T state) where T : Enum
@@ -135,7 +130,7 @@ public class AnimationManager
     {
         string param = animationDataBase.GetParam<PostureState>(state);
 
-        Debug.Log(state);
+        // Debug.Log(state);
 
         if(string.IsNullOrEmpty(param))
         {
@@ -151,7 +146,7 @@ public class AnimationManager
         if(RunningAnimation.TryGetValue(state, out string p))
             animationExecutor.setFalse(p);
 
-        animationExecutor.Execute(p);
+        animationExecutor.Execute(param);
 
         RunningAnimation[state] = param;
     }
@@ -180,6 +175,7 @@ public class AnimationExecutor
 
     public void Execute(string param)
     {
+        Debug.Log(param);
         if (animator == null) return;
 
         animator.SetBool(param, true);
@@ -187,6 +183,8 @@ public class AnimationExecutor
 
     public void setFalse(string param)
     {
+        Debug.Log("SetFlase");
+
         animator.SetBool(param, false);
     }
 
