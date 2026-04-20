@@ -15,9 +15,3 @@ public class pData
 
     public string parametorName;
 }   
-
-[CreateAssetMenu(menuName = "paramData")]
-public class AnimationParametorDataBase : ScriptableObject
-{
-    public List<pData> data;
-}

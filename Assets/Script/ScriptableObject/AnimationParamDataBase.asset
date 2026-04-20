@@ -9,10 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: AnimationParam
+  m_Script: {fileID: 11500000, guid: 4ce5d1aba5371b44d8cea2409729e934, type: 3}
+  m_Name: AnimationParamDataBase
   m_EditorClassIdentifier: Assembly-CSharp::AnimationParametorDataBase
   data:
+  - useMovement: 1
+    move: 1
+    usePositioning: 0
+    posit: 0
+    usePosture: 0
+    post: 0
+    parametorName: Move
   - useMovement: 0
     move: 0
     usePositioning: 0
@@ -21,23 +28,30 @@ MonoBehaviour:
     post: 1
     parametorName: Crouch
   - useMovement: 1
-    move: 1
-    usePositioning: 0
-    posit: 0
-    usePosture: 0
-    post: 0
-    parametorName: Move
-  - useMovement: 1
-    move: 2
-    usePositioning: 0
-    posit: 0
-    usePosture: 0
-    post: 0
-    parametorName: Move
-  - useMovement: 1
     move: 0
     usePositioning: 0
     posit: 0
     usePosture: 0
-    post: 1
-    parametorName: 
+    post: 0
+    parametorName: Stand
+  - useMovement: 0
+    move: 0
+    usePositioning: 0
+    posit: 0
+    usePosture: 1
+    post: 0
+    parametorName: Stand
+  - useMovement: 0
+    move: 0
+    usePositioning: 1
+    posit: 1
+    usePosture: 0
+    post: 0
+    parametorName: Jump
+  - useMovement: 0
+    move: 0
+    usePositioning: 1
+    posit: 1
+    usePosture: 0
+    post: 0
+    parametorName: Jump

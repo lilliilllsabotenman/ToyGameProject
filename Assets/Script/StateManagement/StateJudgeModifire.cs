@@ -98,21 +98,12 @@ namespace StateJudgment//あとでEnumごとに名前空間分割
 
         public bool StateJudgment(PlayerStateData state)
         {
+            Debug.Log(state.positioningState);
             if(state.positioningState == PositioningState.Ground) return true;
 
             else return false;
         }
     }
 
-    public class StateChangeJudgment
-    {
-        public Dictionary<MovementState, StateChangeModifire> movementModifireData {get; private set;}
-        public Dictionary<PositioningState, StateChangeModifire> positioningModifireData {get; private set;}
-        public Dictionary<PostureState, StateChangeModifire> postureModifireData {get; private set;}
 
-        public StateChangeJudgment()
-        {
-
-        }
-    }
 }

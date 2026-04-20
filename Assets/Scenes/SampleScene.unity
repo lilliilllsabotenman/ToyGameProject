@@ -2064,7 +2064,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationEntry
   player: {fileID: 1215276371}
   animator: {fileID: 1215276381}
-  dataBase: {fileID: 11400000, guid: 79b382f3f2179f04587cb6f25ac471d9, type: 2}
+  dataBase: {fileID: 11400000, guid: fa775870ee3db23488f717f75cbff411, type: 2}
 --- !u!4 &1736258026
 Transform:
   m_ObjectHideFlags: 0

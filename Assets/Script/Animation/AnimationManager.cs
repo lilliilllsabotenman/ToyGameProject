@@ -175,7 +175,6 @@ public class AnimationExecutor
 
     public void Execute(string param)
     {
-        Debug.Log(param);
         if (animator == null) return;
 
         animator.SetBool(param, true);
@@ -183,7 +182,6 @@ public class AnimationExecutor
 
     public void setFalse(string param)
     {
-        Debug.Log("SetFlase");
 
         animator.SetBool(param, false);
     }

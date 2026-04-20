@@ -1,12 +1,12 @@
 using UnityEngine;
 
 #region 
-public class GroundCollisionLogic
+public class AutoStateChanged
 {
     private LayerMask groundLayer;
     private PlayerStateManager playerState;
 
-    public GroundCollisionLogic(PlayerStateManager playerState, LayerMask groundLayer)
+    public AutoStateChanged(PlayerStateManager playerState, LayerMask groundLayer)
     {
         this.groundLayer = groundLayer;
         this.playerState = playerState;
@@ -14,6 +14,7 @@ public class GroundCollisionLogic
 
     public bool CheckLanding(Collision collision)
     {
+        Debug.Log("Collision");
         // レイヤー判定
         if((groundLayer.value & (1 << collision.gameObject.layer)) == 0)
             return false;
@@ -22,7 +23,7 @@ public class GroundCollisionLogic
         foreach(ContactPoint contact in collision.contacts)
         {
             if(contact.normal.y > 0.5f)
-                return playerState.TryChangeState(PositioningState.Ground);
+                return playerState.positioningChanged(PositioningState.Ground);
         }
 
         return false;
