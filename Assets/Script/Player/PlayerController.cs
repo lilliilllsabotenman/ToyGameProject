@@ -139,4 +139,9 @@ public class PlayerController : MonoBehaviour
     {
         wallResolver.Clear();
     }
+
+    public StateWatcher GetStateWatcher()
+    {
+        return this.stateWatcher;
+    }
 }

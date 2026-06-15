@@ -2042,7 +2042,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1736258026}
-  - component: {fileID: 1736258025}
+  - component: {fileID: 1736258027}
   m_Layer: 0
   m_Name: AnimationManagement
   m_TagString: Untagged
@@ -2050,21 +2050,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1736258025
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1736258024}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b90161b0dd940914788ed5c0ef6631f7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationEntry
-  player: {fileID: 1215276371}
-  animator: {fileID: 1215276381}
-  dataBase: {fileID: 11400000, guid: fa775870ee3db23488f717f75cbff411, type: 2}
 --- !u!4 &1736258026
 Transform:
   m_ObjectHideFlags: 0
@@ -2080,6 +2065,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1736258027
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1736258024}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37135a399bbf02c4185ec58c67d30ed5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationSystem
+  Player: {fileID: 1215276371}
+  animator: {fileID: 1215276381}
+  animationMappings: {fileID: 11400000, guid: 7bdd61dd0dad4b145aeb4a4057d8c99f, type: 2}
 --- !u!1 &1812005134
 GameObject:
   m_ObjectHideFlags: 0
