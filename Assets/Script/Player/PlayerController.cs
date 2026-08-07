@@ -111,8 +111,6 @@ public class PlayerController : MonoBehaviour
         inputWatcher.onUpdate();
         getItemAction.getAction(this.gameObject, screenCenterDetector);
         behaviourExecutor.OnUpdate();
-
-        Debug.Log(playerStateData.positioningState);
     }
 
     private void FixedUpdate()
