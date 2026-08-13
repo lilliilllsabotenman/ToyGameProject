@@ -17,7 +17,7 @@ public class GetterNode : BaseNode
         }
     }
 
-    public GetterNode(string initialMethodName, List<MethodParamInfo> param = null, Type returnType = null, List<NodeParamEntry> savedParams = null, string displayName = null) : base("Action")
+    public GetterNode(string initialMethodName, List<MethodParamInfo> param = null, Type returnType = null, List<NodeParamEntry> savedParams = null, string displayName = null) : base("Getter")
     {
         if (param != null)
         {

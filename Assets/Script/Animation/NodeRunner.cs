@@ -22,32 +22,32 @@ public class NodeRunner : MonoBehaviour, INodeActionSource
         executor.Run();
     }
 
-    [VisualScriptingAction]
+    [VisualScriptingAction(DisplayName = "ログ出力")]
     public void Debug_Log(string Message)
     {
         Debug.Log(Message);
     }
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "プレイヤー速さ取得")]
     public float GetPlayerSpeed()
     {
         float speed = rgidbody.linearVelocity.magnitude;
         return Mathf.Clamp01(speed);
     }
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "数値→文字列")]
     public string FloatToString(float value)
     {
         return value.ToString();
     }
 
-    [VisualScriptingAction]
+    [VisualScriptingAction(DisplayName = "アニメーションパラメーター(Float)を設定")]
     public void SetFloat(string parameterName, float value)
     {
         animator.SetFloat(parameterName, value);
     }
 
-    [VisualScriptingAction]
+    [VisualScriptingAction(DisplayName = "攻撃")]
     public string Attack(string value)
     {
         return value;

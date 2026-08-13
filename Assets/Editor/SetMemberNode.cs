@@ -6,7 +6,7 @@ public class SetMemberNode : BaseNode
 {
     public string MemberName;
 
-    public SetMemberNode(string memberName, Type portType) : base("Set " + memberName)
+    public SetMemberNode(string memberName, Type portType) : base(memberName + " を設定")
     {
         MemberName = memberName;
 
