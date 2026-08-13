@@ -26,54 +26,48 @@ public class DefaultNode : INodeActionSource
     [VisualScriptingGetter(DisplayName = "÷")]
     public float Divide(float a, float b) => a / b;
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "絶対値")]
     public float Abs(float f) => Mathf.Abs(f);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "範囲内に収める")]
     public float Clamp(float value, float min, float max) => Mathf.Clamp(value, min, max);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "0〜1に収める")]
     public float Clamp01(float value) => Mathf.Clamp01(value);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "線形補間")]
     public float Lerp(float a, float b, float t) => Mathf.Lerp(a, b, t);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "補間率を求める")]
     public float InverseLerp(float a, float b, float value) => Mathf.InverseLerp(a, b, value);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "小さい方")]
     public float Min(float a, float b) => Mathf.Min(a, b);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "大きい方")]
     public float Max(float a, float b) => Mathf.Max(a, b);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "四捨五入")]
     public float Round(float f) => Mathf.Round(f);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "切り捨て")]
     public float Floor(float f) => Mathf.Floor(f);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "切り上げ")]
     public float Ceil(float f) => Mathf.Ceil(f);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "平方根")]
     public float Sqrt(float f) => Mathf.Sqrt(f);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "べき乗")]
     public float Pow(float f, float p) => Mathf.Pow(f, p);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "符号")]
     public float Sign(float f) => Mathf.Sign(f);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "値に近づける")]
     public float MoveTowards(float current, float target, float maxDelta) => Mathf.MoveTowards(current, target, maxDelta);
-
-    [VisualScriptingGetter]
-    public float PingPong(float t, float length) => Mathf.PingPong(t, length);
-
-    [VisualScriptingGetter]
-    public float Repeat(float t, float length) => Mathf.Repeat(t, length);
-
+    
     [VisualScriptingGetter(DisplayName = "==")]
     public bool Equal(float a, float b) => a == b;
 
@@ -96,70 +90,68 @@ public class DefaultNode : INodeActionSource
 
     #region RigidBody
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "Rigidbody取得")]
     public Rigidbody GetRigidBody(GameObject go) => go.GetComponent<Rigidbody>();
 
-    [VisualScriptingGetter]
-    public Vector3 GetVelocity(Rigidbody rb) => rb.linearVelocity;
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "速さ取得")]
     public float GetSpeed(Rigidbody rb) => rb.linearVelocity.magnitude;
 
     #endregion
 
     #region Collision
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "接地判定")]
     public bool IsGrounded(GameObject go, float rayDistance) => Physics.Raycast(go.transform.position, Vector3.down, rayDistance);
 
     #endregion
 
     #region Animator
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "Animator取得")]
     public Animator GetAnimator(GameObject go) => go.GetComponent<Animator>();
 
-    [VisualScriptingAction]
+    [VisualScriptingAction(DisplayName = "アニメーションパラメーター(Float)を設定")]
     public void SetFloat(Animator animator, string name, float value) => animator.SetFloat(name, value);
 
-    [VisualScriptingAction]
+    [VisualScriptingAction(DisplayName = "アニメーションパラメーター(Int)を設定")]
     public void SetInteger(Animator animator, string name, int value) => animator.SetInteger(name, value);
 
-    [VisualScriptingAction]
+    [VisualScriptingAction(DisplayName = "アニメーションパラメーター(Bool)を設定")]
     public void SetBool(Animator animator, string name, bool value) => animator.SetBool(name, value);
 
-    [VisualScriptingAction]
+    [VisualScriptingAction(DisplayName = "アニメーションパラメーター(Trigger)を実行")]
     public void SetTrigger(Animator animator, string name) => animator.SetTrigger(name);
 
     #endregion
 
     #region GameObject
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "名前で検索")]
     public GameObject Find(string name) => GameObject.Find(name);
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "タグで検索")]
     public GameObject FindWithTag(string tag) => GameObject.FindWithTag(tag);
 
     #endregion
 
     #region Time
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "経過時間(1フレーム)")]
     public float DeltaTime() => Time.deltaTime;
 
     #endregion
 
     #region Debug
 
-    [VisualScriptingAction]
+    [VisualScriptingAction(DisplayName = "ログ出力")]
     public void _Debug(string Value) => Debug.Log(Value);
 
     #endregion
 
     #region Condition
 
-    [VisualScriptingCondition]
+    [VisualScriptingCondition(DisplayName = "もし〜なら")]
     public ConditionParameter IF(bool condition)
     {
         if(condition) return ConditionParameter.True;
@@ -170,13 +162,13 @@ public class DefaultNode : INodeActionSource
 
     #region Convert
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "数値→文字列")]
     public string FloatToString(float value) => value.ToString();
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "整数→文字列")]
     public string IntToString(int value) => value.ToString();
 
-    [VisualScriptingGetter]
+    [VisualScriptingGetter(DisplayName = "真偽値→文字列")]
     public string BoolToString(bool value) => value.ToString();
 
     #endregion

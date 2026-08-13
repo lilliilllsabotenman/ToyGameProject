@@ -103,11 +103,13 @@ public static class GraphSerializer
                     actionData.MethodKey,
                     NodeMethodOptions.GetMethodParams(sourceType, actionData.MethodKey),
                     NodeMethodOptions.GetReturnType(sourceType, actionData.MethodKey),
-                    actionData.Params),
+                    actionData.Params,
+                    NodeMethodOptions.GetActionDisplayName(sourceType, actionData.MethodKey)),
                 ConditionNodeData conditionData => new ConditionNode(
                     conditionData.MethodKey,
                     NodeMethodOptions.GetMethodParams(sourceType, conditionData.MethodKey),
-                    conditionData.Params),
+                    conditionData.Params,
+                    NodeMethodOptions.GetConditionDisplayName(sourceType, conditionData.MethodKey)),
                 GetMemberNodeData getMemberData => new GetMemberNode(getMemberData.MemberName, ResolveMemberType(data, getMemberData.MemberName)),
                 SetMemberNodeData setMemberData => new SetMemberNode(setMemberData.MemberName, ResolveMemberType(data, setMemberData.MemberName)),
                 _ => null

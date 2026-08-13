@@ -20,6 +20,7 @@ namespace StateJudgment
                 new CrouchStateJudgment(),
                 new MoveStateJudgment(),
                 new StandStateJudgment(),
+                new DashStateJudgment(),
                 new GroundStateJudgment(),
                 new JumpStateJudgment()
             };

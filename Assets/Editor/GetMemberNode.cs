@@ -5,7 +5,7 @@ public class GetMemberNode : BaseNode
 {
     public string MemberName;
 
-    public GetMemberNode(string memberName, Type portType) : base("Get " + memberName)
+    public GetMemberNode(string memberName, Type portType) : base(memberName + " を取得")
     {
         MemberName = memberName;
         AddOutput("Value", portType ?? typeof(object));

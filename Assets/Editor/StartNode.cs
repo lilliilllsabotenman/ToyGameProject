@@ -3,7 +3,7 @@ using UnityEditor.Experimental.GraphView;
 
 public class StartNode : BaseNode
 {
-    public StartNode() : base("Start")
+    public StartNode() : base("開始")
     {
         // Startはインプットなし、アウトプットのみ
         var execOut = CreateExecPort(Direction.Output, Port.Capacity.Multi);

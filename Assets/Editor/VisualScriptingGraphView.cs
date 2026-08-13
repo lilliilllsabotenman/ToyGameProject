@@ -47,18 +47,20 @@ public class VisualScriptingGraphView : GraphView
 
         foreach (string actionName in NodeMethodOptions.GetActionNames(sourceType))
         {
-            evt.menu.AppendAction("Add Action/" + actionName, _ => AddElement(new ActionNode(actionName, NodeMethodOptions.GetMethodParams(sourceType, actionName), NodeMethodOptions.GetReturnType(sourceType, actionName))));
+            string actionDisplayName = NodeMethodOptions.GetActionDisplayName(sourceType, actionName);
+            evt.menu.AppendAction("アクション追加/" + actionDisplayName, _ => AddElement(new ActionNode(actionName, NodeMethodOptions.GetMethodParams(sourceType, actionName), NodeMethodOptions.GetReturnType(sourceType, actionName), displayName: actionDisplayName)));
         }
 
         foreach (string conditionName in NodeMethodOptions.GetConditionNames(sourceType))
         {
-            evt.menu.AppendAction("Add Condition/" + conditionName, _ => AddElement(new ConditionNode(conditionName, NodeMethodOptions.GetMethodParams(sourceType, conditionName))));
+            string conditionDisplayName = NodeMethodOptions.GetConditionDisplayName(sourceType, conditionName);
+            evt.menu.AppendAction("条件追加/" + conditionDisplayName, _ => AddElement(new ConditionNode(conditionName, NodeMethodOptions.GetMethodParams(sourceType, conditionName), displayName: conditionDisplayName)));
         }
 
         foreach (string getterName in NodeMethodOptions.GetGetterNames(sourceType))
         {
             string getterDisplayName = NodeMethodOptions.GetDisplayName(sourceType, getterName);
-            evt.menu.AppendAction("Add Getter/" + getterDisplayName, _ => AddElement(new GetterNode(getterName, NodeMethodOptions.GetMethodParams(sourceType, getterName), NodeMethodOptions.GetReturnType(sourceType, getterName), displayName: getterDisplayName)));
+            evt.menu.AppendAction("取得追加/" + getterDisplayName, _ => AddElement(new GetterNode(getterName, NodeMethodOptions.GetMethodParams(sourceType, getterName), NodeMethodOptions.GetReturnType(sourceType, getterName), displayName: getterDisplayName)));
         }
 
         if (graphData != null)
@@ -67,8 +69,8 @@ public class VisualScriptingGraphView : GraphView
             {
                 string memberName = member.Name;
                 Type memberType = string.IsNullOrEmpty(member.TypeName) ? null : Type.GetType(member.TypeName);
-                evt.menu.AppendAction("Add Member/Get " + memberName, _ => AddElement(new GetMemberNode(memberName, memberType)));
-                evt.menu.AppendAction("Add Member/Set " + memberName, _ => AddElement(new SetMemberNode(memberName, memberType)));
+                evt.menu.AppendAction("メンバー追加/取得: " + memberName, _ => AddElement(new GetMemberNode(memberName, memberType)));
+                evt.menu.AppendAction("メンバー追加/設定: " + memberName, _ => AddElement(new SetMemberNode(memberName, memberType)));
             }
         }
     }

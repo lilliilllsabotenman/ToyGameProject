@@ -54,6 +54,20 @@ namespace StateJudgment//あとでEnumごとに名前空間分割
         }
     }
 
+    public class DashStateJudgment : StateChangeModifire
+    {
+        public Enum SetType()
+        {
+            return MovementState.Dash;
+        }
+
+        public bool StateJudgment(PlayerStateData data)
+        {
+            // 常に許可(暫定)
+            return true;
+        }
+    }
+
     public class StandStateJudgment : StateChangeModifire
     {
 

@@ -87,4 +87,30 @@ public static class NodeMethodOptions
         string displayName = method?.GetCustomAttribute<VisualScriptingGetter>()?.DisplayName;
         return string.IsNullOrEmpty(displayName) ? methodName : displayName;
     }
+
+    // ActionのDisplayNameが設定されていればそれを、無ければメソッド名そのものを返す。
+    public static string GetActionDisplayName(Type sourceType, string methodName)
+    {
+        if (sourceType == null) return methodName;
+
+        MethodInfo method = sourceType
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .FirstOrDefault(m => m.Name == methodName);
+
+        string displayName = method?.GetCustomAttribute<VisualScriptingActionAttribute>()?.DisplayName;
+        return string.IsNullOrEmpty(displayName) ? methodName : displayName;
+    }
+
+    // ConditionのDisplayNameが設定されていればそれを、無ければメソッド名そのものを返す。
+    public static string GetConditionDisplayName(Type sourceType, string methodName)
+    {
+        if (sourceType == null) return methodName;
+
+        MethodInfo method = sourceType
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .FirstOrDefault(m => m.Name == methodName);
+
+        string displayName = method?.GetCustomAttribute<VisualScriptingConditionAttribute>()?.DisplayName;
+        return string.IsNullOrEmpty(displayName) ? methodName : displayName;
+    }
 }

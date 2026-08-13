@@ -21,7 +21,7 @@ public class ConditionNode : BaseNode
     {
     }
 
-    public ConditionNode(string initialMethodName, List<MethodParamInfo> param = null, List<NodeParamEntry> savedParams = null) : base("Condition")
+    public ConditionNode(string initialMethodName, List<MethodParamInfo> param = null, List<NodeParamEntry> savedParams = null, string displayName = null) : base("Condition")
     {
         inputContainer.Add(CreateExecPort(Direction.Input, Port.Capacity.Multi));
 
@@ -43,6 +43,7 @@ public class ConditionNode : BaseNode
         }
 
         ConditionKey = initialMethodName;
+        if (!string.IsNullOrEmpty(displayName)) title = displayName;
 
         RefreshExpandedState();
         RefreshPorts();
