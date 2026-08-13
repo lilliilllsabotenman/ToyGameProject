@@ -2,30 +2,25 @@
 using System;
 using System.Collections.Generic;
 
-// NodeData/EdgeDataを解釈してStartから辿るだけの層。
-// ActionNode/ConditionNodeが実際に何を呼ぶかは呼び出し側がonAction/onConditionで渡す。
-// Type文字列はEditor側のノードクラス名(StartNode/ActionNode/ConditionNode)と一致させる規約。
 public class GraphExecutor
 {
-    private const string StartNodeType = "StartNode";
-    private const string ActionNodeType = "ActionNode";
-    private const string ConditionNodeType = "ConditionNode";
-
-    private Dictionary<string, NodeData> _nodeMap = new Dictionary<string, NodeData>();
+    private Dictionary<string, BaseNodeData> _nodeMap = new Dictionary<string, BaseNodeData>();
     private Dictionary<string, string> _edgeMap = new Dictionary<string, string>();
     private string _startGuid;
-    private Action<string> _onAction;
-    private Func<string, bool> _onCondition;
+    private Action<ActionNodeData> _onAction;
+    private Func<ConditionNodeData, string> _onCondition;
+    private Action<SetMemberNodeData> _onSetMember;
 
-    public GraphExecutor(VisualScriptingGraphData data, Action<string> onAction, Func<string, bool> onCondition)
+    public GraphExecutor(VisualScriptingGraphData data, Action<ActionNodeData> onAction, Func<ConditionNodeData, string> onCondition, Action<SetMemberNodeData> onSetMember)
     {
         _onAction = onAction;
         _onCondition = onCondition;
+        _onSetMember = onSetMember;
 
-        foreach (NodeData nodeData in data.Nodes)
+        foreach (BaseNodeData nodeData in data.Nodes)
         {
             _nodeMap[nodeData.Guid] = nodeData;
-            if (nodeData.Type == StartNodeType)
+            if (nodeData is StartNodeData)
             {
                 _startGuid = nodeData.Guid;
             }
@@ -44,7 +39,7 @@ public class GraphExecutor
 
         while (!string.IsNullOrEmpty(currentGuid))
         {
-            NodeData currentNode;
+            BaseNodeData currentNode;
             if (!_nodeMap.TryGetValue(currentGuid, out currentNode)) break;
 
             string outputPort = ExecuteNode(currentNode);
@@ -58,18 +53,20 @@ public class GraphExecutor
         }
     }
 
-    private string ExecuteNode(NodeData node)
+    private string ExecuteNode(BaseNodeData node)
     {
-        switch (node.Type)
+        switch (node)
         {
-            case StartNodeType:
+            case StartNodeData:
                 return "Out";
-            case ActionNodeType:
-                _onAction?.Invoke(node.Parameter);
+            case ActionNodeData actionData:
+                _onAction?.Invoke(actionData);
                 return "Out";
-            case ConditionNodeType:
-                bool result = _onCondition != null && _onCondition(node.Parameter);
-                return result ? "True" : "False";
+            case SetMemberNodeData setMemberData:
+                _onSetMember?.Invoke(setMemberData);
+                return "Out";
+            case ConditionNodeData conditionData:
+                return _onCondition?.Invoke(conditionData);
             default:
                 return null;
         }

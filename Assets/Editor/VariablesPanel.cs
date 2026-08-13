@@ -1,0 +1,149 @@
+// Editor/VariablesPanel.cs
+using System;
+using System.Linq;
+using UnityEditor;
+using UnityEditor.IMGUI.Controls;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+// グラフのメンバ変数(Component参照)の一覧・追加・削除を行うパネル。
+// 操作のたびにGraphDataアセットへ即時保存する(ノード/エッジのSaveボタンとは非同期)。
+public class VariablesPanel : VisualElement
+{
+    private static readonly (string Label, Type Type)[] ValueTypes =
+    {
+        ("Int", typeof(int)),
+        ("Float", typeof(float)),
+        ("String", typeof(string)),
+        ("Bool", typeof(bool)),
+    };
+
+    private VisualElement _listContainer;
+
+    public VariablesPanel()
+    {
+        style.width = 220;
+        style.paddingLeft = 4;
+        style.paddingRight = 4;
+        style.paddingTop = 4;
+        style.backgroundColor = new Color(0, 0, 0, 0.5f);
+
+        Label title = new Label("Variables");
+        title.style.unityFontStyleAndWeight = FontStyle.Bold;
+        Add(title);
+
+        Button addComponentButton = new Button { text = "+ Component" };
+        addComponentButton.clicked += () => OnAddComponentClicked(addComponentButton);
+        Add(addComponentButton);
+
+        Button addValueButton = new Button { text = "+ Value" };
+        addValueButton.clicked += OnAddValueClicked;
+        Add(addValueButton);
+
+        _listContainer = new VisualElement();
+        Add(_listContainer);
+
+        Refresh();
+    }
+
+    private void OnAddComponentClicked(VisualElement anchor)
+    {
+        AdvancedDropdownState state = new AdvancedDropdownState();
+        ComponentTypeDropdown dropdown = new ComponentTypeDropdown(state, type => AddMember(type, MemberKind.Component));
+        dropdown.Show(anchor.worldBound);
+    }
+
+    private void OnAddValueClicked()
+    {
+        GenericMenu menu = new GenericMenu();
+        foreach ((string label, Type type) in ValueTypes)
+        {
+            menu.AddItem(new GUIContent(label), false, () => AddMember(type, MemberKind.Value));
+        }
+        menu.ShowAsContext();
+    }
+
+    private void AddMember(Type type, MemberKind kind)
+    {
+        VisualScriptingGraphData data = LoadOrCreateGraphData();
+
+        string baseName = type.Name;
+        string name = baseName;
+        int suffix = 1;
+        while (data.Members.Any(m => m.Name == name))
+        {
+            suffix++;
+            name = baseName + suffix;
+        }
+
+        data.Members.Add(new MemberVariableData { Name = name, Kind = kind, TypeName = type.AssemblyQualifiedName });
+        SaveGraphData(data);
+        Refresh();
+    }
+
+    private void RemoveMember(string memberName)
+    {
+        VisualScriptingGraphData data = LoadOrCreateGraphData();
+        data.Members.RemoveAll(m => m.Name == memberName);
+        SaveGraphData(data);
+        Refresh();
+    }
+
+    private void SetDefaultValue(string memberName, string value)
+    {
+        VisualScriptingGraphData data = LoadOrCreateGraphData();
+        MemberVariableData member = data.Members.Find(m => m.Name == memberName);
+        if (member == null) return;
+
+        member.DefaultValue = value;
+        SaveGraphData(data);
+    }
+
+    private void Refresh()
+    {
+        _listContainer.Clear();
+        VisualScriptingGraphData data = LoadOrCreateGraphData();
+
+        foreach (MemberVariableData member in data.Members)
+        {
+            VisualElement row = new VisualElement();
+            row.style.flexDirection = FlexDirection.Row;
+
+            Type type = string.IsNullOrEmpty(member.TypeName) ? null : Type.GetType(member.TypeName);
+            Label label = new Label($"{member.Name} : {(type != null ? type.Name : "?")}");
+            label.style.flexGrow = 1;
+            row.Add(label);
+
+            if (member.Kind == MemberKind.Value)
+            {
+                string memberName = member.Name;
+                TextField valueField = new TextField { value = member.DefaultValue ?? string.Empty };
+                valueField.RegisterValueChangedCallback(evt => SetDefaultValue(memberName, evt.newValue));
+                row.Add(valueField);
+            }
+
+            string removeName = member.Name;
+            Button removeButton = new Button(() => RemoveMember(removeName)) { text = "x" };
+            row.Add(removeButton);
+
+            _listContainer.Add(row);
+        }
+    }
+
+    private static VisualScriptingGraphData LoadOrCreateGraphData()
+    {
+        VisualScriptingGraphData data = AssetDatabase.LoadAssetAtPath<VisualScriptingGraphData>(VisualScriptingGraphView.GraphDataPath);
+        if (data == null)
+        {
+            data = ScriptableObject.CreateInstance<VisualScriptingGraphData>();
+            AssetDatabase.CreateAsset(data, VisualScriptingGraphView.GraphDataPath);
+        }
+        return data;
+    }
+
+    private static void SaveGraphData(VisualScriptingGraphData data)
+    {
+        EditorUtility.SetDirty(data);
+        AssetDatabase.SaveAssets();
+    }
+}

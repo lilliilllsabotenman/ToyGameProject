@@ -3,7 +3,7 @@ using UnityEditor.Experimental.GraphView;
 using System;
 using System.Collections.Generic;
 
-public class ActionNode : BaseNode
+public class GetterNode : BaseNode
 {
     private string _actionKey;
 
@@ -17,11 +17,8 @@ public class ActionNode : BaseNode
         }
     }
 
-    public ActionNode(string initialMethodName, List<MethodParamInfo> param = null, Type returnType = null, List<NodeParamEntry> savedParams = null) : base("Action")
+    public GetterNode(string initialMethodName, List<MethodParamInfo> param = null, Type returnType = null, List<NodeParamEntry> savedParams = null, string displayName = null) : base("Action")
     {
-        inputContainer.Add(CreateExecPort(Direction.Input, Port.Capacity.Multi));
-        outputContainer.Add(CreateExecPort(Direction.Output, Port.Capacity.Multi));
-
         if (param != null)
         {
             foreach (MethodParamInfo p in param)
@@ -37,6 +34,7 @@ public class ActionNode : BaseNode
         }
 
         ActionKey = initialMethodName;
+        if (!string.IsNullOrEmpty(displayName)) title = displayName;
 
         RefreshExpandedState();
         RefreshPorts();

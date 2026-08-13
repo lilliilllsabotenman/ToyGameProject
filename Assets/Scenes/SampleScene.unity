@@ -1785,6 +1785,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GraphExecutorSample
   GraphData: {fileID: 11400000, guid: 896b8a7d7c86b434d8be814765b9b38a, type: 2}
+  rgidbody: {fileID: 1215276376}
+  animator: {fileID: 1215276381}
 --- !u!1 &1638731144
 GameObject:
   m_ObjectHideFlags: 0

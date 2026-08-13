@@ -10,3 +10,9 @@ public class VisualScriptingActionAttribute : Attribute
 public class VisualScriptingConditionAttribute : Attribute
 {
 }
+
+[AttributeUsage(AttributeTargets.Method)]
+public class VisualScriptingGetter : Attribute
+{
+    public string DisplayName;
+}

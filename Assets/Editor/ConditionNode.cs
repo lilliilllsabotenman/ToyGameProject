@@ -1,5 +1,7 @@
-// Editor/Nodes/ConditionNode.cs
+        // Editor/Nodes/ConditionNode.cs
 using UnityEditor.Experimental.GraphView;
+using System;
+using System.Collections.Generic;
 
 public class ConditionNode : BaseNode
 {
@@ -19,18 +21,26 @@ public class ConditionNode : BaseNode
     {
     }
 
-    public ConditionNode(string initialMethodName) : base("Condition")
+    public ConditionNode(string initialMethodName, List<MethodParamInfo> param = null, List<NodeParamEntry> savedParams = null) : base("Condition")
     {
         inputContainer.Add(CreateExecPort(Direction.Input, Port.Capacity.Multi));
 
-        // True/Falseの2出力
-        Port truePort = CreateExecPort(Direction.Output, Port.Capacity.Multi);
-        truePort.portName = "True";
-        outputContainer.Add(truePort);
+        if (param != null)
+        {
+            foreach (MethodParamInfo p in param)
+            {
+                string initialValue = savedParams?.Find(e => e.Key == p.Name)?.Value;
+                AddInput(p.Name, p.Type, initialValue);
+            }
+        }
 
-        Port falsePort = CreateExecPort(Direction.Output, Port.Capacity.Multi);
-        falsePort.portName = "False";
-        outputContainer.Add(falsePort);
+        // ConditionParameterの値ごとに出力ポートを生成
+        foreach (ConditionParameter value in Enum.GetValues(typeof(ConditionParameter)))
+        {
+            Port port = CreateExecPort(Direction.Output, Port.Capacity.Multi);
+            port.portName = value.ToString();
+            outputContainer.Add(port);
+        }
 
         ConditionKey = initialMethodName;
 
