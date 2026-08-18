@@ -49,16 +49,8 @@ public class GameConstantParametor
         else return gameConstant.moveSpeed;
     }
 
-    public float GetJumpForce()
+    public float GetJumpForce()     
     {
         return gameConstant.jumpForce;
     }
 }
-
-public class TestClass
-{
-}
-
-
-
-

@@ -86,7 +86,7 @@ public static class NodeMethodOptions
 
         string displayName = method?.GetCustomAttribute<VisualScriptingGetter>()?.DisplayName;
         return string.IsNullOrEmpty(displayName) ? methodName : displayName;
-    }
+    }   
 
     // ActionのDisplayNameが設定されていればそれを、無ければメソッド名そのものを返す。
     public static string GetActionDisplayName(Type sourceType, string methodName)

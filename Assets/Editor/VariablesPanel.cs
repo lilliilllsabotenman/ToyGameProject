@@ -19,9 +19,12 @@ public class VariablesPanel : VisualElement
     };
 
     private VisualElement _listContainer;
+    private VisualScriptingGraphView _graphView;
 
-    public VariablesPanel()
+    public VariablesPanel(VisualScriptingGraphView graphView)
     {
+        _graphView = graphView;
+
         style.width = 220;
         style.paddingLeft = 4;
         style.paddingRight = 4;
@@ -65,7 +68,8 @@ public class VariablesPanel : VisualElement
 
     private void AddMember(Type type, MemberKind kind)
     {
-        VisualScriptingGraphData data = LoadOrCreateGraphData();
+        VisualScriptingGraphData data = GraphSerializer.GetCurrent(_graphView);
+        if (data == null) return;
 
         string baseName = type.Name;
         string name = baseName;
@@ -77,32 +81,37 @@ public class VariablesPanel : VisualElement
         }
 
         data.Members.Add(new MemberVariableData { Name = name, Kind = kind, TypeName = type.AssemblyQualifiedName });
-        SaveGraphData(data);
+        GraphSerializer.PersistCurrent();
         Refresh();
     }
 
     private void RemoveMember(string memberName)
     {
-        VisualScriptingGraphData data = LoadOrCreateGraphData();
+        VisualScriptingGraphData data = GraphSerializer.GetCurrent(_graphView);
+        if (data == null) return;
+
         data.Members.RemoveAll(m => m.Name == memberName);
-        SaveGraphData(data);
+        GraphSerializer.PersistCurrent();
         Refresh();
     }
 
     private void SetDefaultValue(string memberName, string value)
     {
-        VisualScriptingGraphData data = LoadOrCreateGraphData();
+        VisualScriptingGraphData data = GraphSerializer.GetCurrent(_graphView);
+        if (data == null) return;
+
         MemberVariableData member = data.Members.Find(m => m.Name == memberName);
         if (member == null) return;
 
         member.DefaultValue = value;
-        SaveGraphData(data);
+        GraphSerializer.PersistCurrent();
     }
 
-    private void Refresh()
+    public void Refresh()
     {
         _listContainer.Clear();
-        VisualScriptingGraphData data = LoadOrCreateGraphData();
+        VisualScriptingGraphData data = GraphSerializer.GetCurrent(_graphView);
+        if (data == null) return;
 
         foreach (MemberVariableData member in data.Members)
         {
@@ -130,20 +139,4 @@ public class VariablesPanel : VisualElement
         }
     }
 
-    private static VisualScriptingGraphData LoadOrCreateGraphData()
-    {
-        VisualScriptingGraphData data = AssetDatabase.LoadAssetAtPath<VisualScriptingGraphData>(VisualScriptingGraphView.GraphDataPath);
-        if (data == null)
-        {
-            data = ScriptableObject.CreateInstance<VisualScriptingGraphData>();
-            AssetDatabase.CreateAsset(data, VisualScriptingGraphView.GraphDataPath);
-        }
-        return data;
-    }
-
-    private static void SaveGraphData(VisualScriptingGraphData data)
-    {
-        EditorUtility.SetDirty(data);
-        AssetDatabase.SaveAssets();
-    }
 }

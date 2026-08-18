@@ -43,7 +43,7 @@ public class TargetTypeDropdown : AdvancedDropdown
     private class TargetTypeDropdownItem : AdvancedDropdownItem
     {
         public readonly Type Type;
-
+    
         public TargetTypeDropdownItem(Type type) : base(type.Name)
         {
             Type = type;

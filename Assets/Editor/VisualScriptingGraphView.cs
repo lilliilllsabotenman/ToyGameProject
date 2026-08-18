@@ -8,7 +8,16 @@ using System.Linq;
 
 public class VisualScriptingGraphView : GraphView
 {
-    public const string GraphDataPath = "Assets/Editor/GraphData/GraphData.asset";
+    public const string GraphDataPath = "Assets/Resources/AnimationTransitionData/GraphData.asset";
+
+    // 今このGraphViewが表示・編集しているパラメーター名。GraphSerializerはこれを読んで保存/読込対象を決める。
+    public string CurrentParameterName { get; set; }
+
+    // GraphSerializer.Loadが再構築中はtrue。この間はAutoSaveを走らせない(再構築途中の不完全な状態を保存してしまうのを防ぐ)。
+    public bool IsLoading { get; set; }
+
+    // 編集履歴。VisualScriptingEditorWindowが保持するインスタンスをここへ注入してもらう。
+    public EditHistoryData History { get; set; }
 
     public VisualScriptingGraphView()
     {
@@ -28,6 +37,23 @@ public class VisualScriptingGraphView : GraphView
 
         // Startノードを最初から配置
         AddElement(CreateStartNode());
+
+        // AutoSave: ノード生成・削除・移動、エッジ接続・解消のたびに保存
+        graphViewChanged = OnGraphViewChanged;
+        // AutoSave: テキストフィールドの編集完了(isDelayed)のたびに保存。ChangeEventはバブリングするので子ノード側の登録は不要。
+        this.RegisterCallback<ChangeEvent<string>>(_ => TriggerAutoSave());
+    }
+
+    private GraphViewChange OnGraphViewChanged(GraphViewChange change)
+    {
+        TriggerAutoSave();
+        return change;
+    }
+
+    private void TriggerAutoSave()
+    {
+        if (IsLoading) return;
+        GraphSerializer.Save(this);
     }
 
     // 接続ルール：OutputからInputにのみ繋げる
@@ -40,7 +66,7 @@ public class VisualScriptingGraphView : GraphView
     
     private void PopulateContextualMenu(ContextualMenuPopulateEvent evt)
     {
-        VisualScriptingGraphData graphData = AssetDatabase.LoadAssetAtPath<VisualScriptingGraphData>(GraphDataPath);
+        VisualScriptingGraphData graphData = GraphSerializer.GetCurrent(this);
         Type sourceType = graphData != null && !string.IsNullOrEmpty(graphData.TargetTypeName)
             ? Type.GetType(graphData.TargetTypeName)
             : null;
@@ -62,6 +88,8 @@ public class VisualScriptingGraphView : GraphView
             string getterDisplayName = NodeMethodOptions.GetDisplayName(sourceType, getterName);
             evt.menu.AppendAction("取得追加/" + getterDisplayName, _ => AddElement(new GetterNode(getterName, NodeMethodOptions.GetMethodParams(sourceType, getterName), NodeMethodOptions.GetReturnType(sourceType, getterName), displayName: getterDisplayName)));
         }
+
+        evt.menu.AppendAction("制御追加/繰り返し(For)", _ => AddElement(new ForNode()));
 
         if (graphData != null)
         {

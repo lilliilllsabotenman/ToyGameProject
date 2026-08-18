@@ -19,6 +19,8 @@ public class RuntimeNodeExecutor
     private Dictionary<string, MethodInfo> _methodCache;
     private Dictionary<string, object> _members;
     private Dictionary<string, object> _actionResultCache = new Dictionary<string, object>();
+    // ForNodeData.Guid → 本体(Bodyポート先)専用のGraphExecutor。構築時に1回だけ作る。
+    private Dictionary<string, GraphExecutor> _forExecutors;
 
     public RuntimeNodeExecutor(VisualScriptingGraphData graphData, INodeActionSource target)
     {
@@ -31,12 +33,40 @@ public class RuntimeNodeExecutor
             .ToDictionary(g => g.Key, g => g.First());
 
         _members = BuildMembers(graphData, target);
+        _forExecutors = BuildForExecutors(graphData);
 
         _executor = new GraphExecutor(
             graphData,
             actionData => InvokeAction(actionData),
             conditionData => InvokeCondition(conditionData),
-            setMemberData => ExecuteSetMember(setMemberData));
+            setMemberData => ExecuteSetMember(setMemberData),
+            forData => RunFor(forData));
+    }
+
+    // グラフ内の全ForNodeData(入れ子含め、フラットなNodesリストを舐めるだけで自然に拾える)について、
+    // Bodyポート先のノードを開始点とする専用GraphExecutorを1回だけ構築しておく。
+    private Dictionary<string, GraphExecutor> BuildForExecutors(VisualScriptingGraphData graphData)
+    {
+        Dictionary<string, GraphExecutor> executors = new Dictionary<string, GraphExecutor>();
+
+        foreach (BaseNodeData nodeData in graphData.Nodes)
+        {
+            if (nodeData is not ForNodeData forData) continue;
+
+            EdgeData bodyEdge = graphData.Edges
+                .Find(e => e.OutputNodeGuid == forData.Guid && e.OutputPortName == "Body");
+            if (bodyEdge == null) continue;
+
+            executors[forData.Guid] = new GraphExecutor(
+                graphData,
+                bodyEdge.InputNodeGuid,
+                actionData => InvokeAction(actionData),
+                conditionData => InvokeCondition(conditionData),
+                setMemberData => ExecuteSetMember(setMemberData),
+                innerForData => RunFor(innerForData));
+        }
+
+        return executors;
     }
 
     private MethodInfo GetMethod(string methodName)
@@ -113,6 +143,46 @@ public class RuntimeNodeExecutor
         };
 
         SetMember(setMemberData.MemberName, value);
+    }
+
+    // Countポート(未配線ならParamsのリテラル値)を解決し、その回数だけ本体を実行する。
+    // 1周ごとに_actionResultCacheをクリアし、副作用を持つActionが周回ごとにちゃんと再実行されるようにする。
+    private void RunFor(ForNodeData forData)
+    {
+        int count = ResolveForCount(forData);
+        if (count <= 0) return;
+
+        if (!_forExecutors.TryGetValue(forData.Guid, out GraphExecutor bodyExecutor)) return;
+
+        for (int i = 0; i < count; i++)
+        {
+            _actionResultCache.Clear();
+            bodyExecutor.Run();
+        }
+    }
+
+    private int ResolveForCount(ForNodeData forData)
+    {
+        EdgeData incomingEdge = _graphData.Edges
+            .Find(e => e.InputNodeGuid == forData.Guid && e.InputPortName == "Count");
+
+        object value;
+        if (incomingEdge != null)
+        {
+            BaseNodeData sourceNode = _graphData.Nodes.Find(n => n.Guid == incomingEdge.OutputNodeGuid);
+            value = sourceNode switch
+            {
+                ActionNodeData sourceActionData => InvokeAction(sourceActionData),
+                GetMemberNodeData sourceMemberData => ResolveMember(sourceMemberData.MemberName),
+                _ => null
+            };
+        }
+        else
+        {
+            value = ConvertLiteral(forData.GetParam("Count"), typeof(int));
+        }
+
+        return value is int intValue ? intValue : 0;
     }
 
     public void Run()

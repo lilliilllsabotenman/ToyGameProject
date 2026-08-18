@@ -73,6 +73,13 @@ public class SetMemberNodeData : BaseNodeData
     public string MemberName;
 }
 
+// 指定回数(Countポート、未配線ならParamsのリテラル値)だけBodyポート側の本体を繰り返し実行する。
+// 完了後はCompleteポートから先に進む。
+[Serializable]
+public class ForNodeData : BaseNodeData
+{
+}
+
 [Serializable]
 public class EdgeData
 {
@@ -99,9 +106,12 @@ public class MemberVariableData
     public string DefaultValue; // Kind == Value の場合のみ使用
 }
 
-[CreateAssetMenu(fileName = "GraphData", menuName = "VS/Graph Data")]
-public class VisualScriptingGraphData : ScriptableObject
+[Serializable]
+public class VisualScriptingGraphData
 {
+    public string Name;
+    public AnimatorControllerParameterType ParameterType;
+
     [SerializeReference]
     public List<BaseNodeData> Nodes = new();
     public List<EdgeData> Edges = new();
@@ -110,4 +120,12 @@ public class VisualScriptingGraphData : ScriptableObject
     // このグラフがAction/Condition/Getterの候補を探す対象クラス(INodeActionSource実装)。
     // Systemの型は直接シリアライズできないため、AssemblyQualifiedNameで保持する。
     public string TargetTypeName;
+}
+
+public class VisualScriptingGraphDataBase : ScriptableObject
+{
+    public List<VisualScriptingGraphData> data = new();
+
+    public VisualScriptingGraphData GetData(string name)
+        => data.Find(d => d.Name == name);
 }

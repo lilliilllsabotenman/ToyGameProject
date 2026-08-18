@@ -1784,7 +1784,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 935a43affa41efe4daad5468043b9131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GraphExecutorSample
-  GraphData: {fileID: 11400000, guid: 896b8a7d7c86b434d8be814765b9b38a, type: 2}
+  GraphData: {fileID: 0}
   rgidbody: {fileID: 1215276376}
   animator: {fileID: 1215276381}
 --- !u!1 &1638731144

@@ -58,7 +58,7 @@ public abstract class BaseNode : Node
         Port port = CreateDataPort(Direction.Input, key, type);
         row.Add(port);
 
-        TextField field = new TextField(key) { value = initialValue ?? string.Empty };
+        TextField field = new TextField(key) { value = initialValue ?? string.Empty, isDelayed = true };
         field.RegisterValueChangedCallback(evt => entry.Value = evt.newValue);
         row.Add(field);
 

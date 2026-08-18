@@ -14,7 +14,6 @@ public class AutoStateChanged
 
     public bool CheckLanding(Collision collision)
     {
-        Debug.Log("Collision");
         // レイヤー判定
         if((groundLayer.value & (1 << collision.gameObject.layer)) == 0)
             return false;

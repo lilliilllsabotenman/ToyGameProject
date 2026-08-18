@@ -7,9 +7,20 @@ public class DefaultNode : INodeActionSource
 {
     public GameObject Owner { get; }
 
+    private Rigidbody rigidbody;
+    private Animator animator;
+    private BoxCollider collision;
+
     public DefaultNode(GameObject obj)
     {
         Owner = obj;
+
+        if(Owner == null) return;
+
+        rigidbody = Owner.GetComponent<Rigidbody>();
+        animator = Owner.GetComponent<Animator>();
+        collision = Owner.GetComponent<BoxCollider>();
+
     }
 
     #region Math
@@ -67,7 +78,7 @@ public class DefaultNode : INodeActionSource
 
     [VisualScriptingGetter(DisplayName = "値に近づける")]
     public float MoveTowards(float current, float target, float maxDelta) => Mathf.MoveTowards(current, target, maxDelta);
-    
+
     [VisualScriptingGetter(DisplayName = "==")]
     public bool Equal(float a, float b) => a == b;
 
@@ -97,12 +108,18 @@ public class DefaultNode : INodeActionSource
     [VisualScriptingGetter(DisplayName = "速さ取得")]
     public float GetSpeed(Rigidbody rb) => rb.linearVelocity.magnitude;
 
+    [VisualScriptingGetter(DisplayName = "自分の速さ取得")]
+    public float GetOwnerSpeed() => rigidbody.linearVelocity.magnitude;
+
     #endregion
 
     #region Collision
 
     [VisualScriptingGetter(DisplayName = "接地判定")]
     public bool IsGrounded(GameObject go, float rayDistance) => Physics.Raycast(go.transform.position, Vector3.down, rayDistance);
+
+    [VisualScriptingGetter(DisplayName = "自分の接地判定")]
+    public bool IsOwnerGrounded(float rayDistance) => Physics.Raycast(Owner.transform.position, Vector3.down, rayDistance);
 
     #endregion
 
@@ -122,6 +139,18 @@ public class DefaultNode : INodeActionSource
 
     [VisualScriptingAction(DisplayName = "アニメーションパラメーター(Trigger)を実行")]
     public void SetTrigger(Animator animator, string name) => animator.SetTrigger(name);
+
+    [VisualScriptingAction(DisplayName = "自分のアニメーションパラメーター(Float)を設定")]
+    public void SetOwnerFloat(string name, float value) => animator.SetFloat(name, value);
+
+    [VisualScriptingAction(DisplayName = "自分のアニメーションパラメーター(Int)を設定")]
+    public void SetOwnerInteger(string name, int value) => animator.SetInteger(name, value);
+
+    [VisualScriptingAction(DisplayName = "自分のアニメーションパラメーター(Bool)を設定")]
+    public void SetOwnerBool(string name, bool value) => animator.SetBool(name, value);
+
+    [VisualScriptingAction(DisplayName = "自分のアニメーションパラメーター(Trigger)を実行")]
+    public void SetOwnerTrigger(string name) => animator.SetTrigger(name);
 
     #endregion
 
