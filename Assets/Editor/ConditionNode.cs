@@ -17,12 +17,15 @@ public class ConditionNode : BaseNode
         }
     }
 
+    public string SourceTypeName;
+
     public ConditionNode() : this(null)
     {
     }
 
-    public ConditionNode(string initialMethodName, List<MethodParamInfo> param = null, List<NodeParamEntry> savedParams = null, string displayName = null) : base("Condition")
+    public ConditionNode(string initialMethodName, List<MethodParamInfo> param = null, List<NodeParamEntry> savedParams = null, string displayName = null, string sourceTypeName = null) : base("Condition")
     {
+        SourceTypeName = sourceTypeName;
         inputContainer.Add(CreateExecPort(Direction.Input, Port.Capacity.Multi));
 
         if (param != null)

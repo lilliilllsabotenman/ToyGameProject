@@ -17,8 +17,11 @@ public class GetterNode : BaseNode
         }
     }
 
-    public GetterNode(string initialMethodName, List<MethodParamInfo> param = null, Type returnType = null, List<NodeParamEntry> savedParams = null, string displayName = null) : base("Getter")
+    public string SourceTypeName;
+
+    public GetterNode(string initialMethodName, List<MethodParamInfo> param = null, Type returnType = null, List<NodeParamEntry> savedParams = null, string displayName = null, string sourceTypeName = null) : base("Getter")
     {
+        SourceTypeName = sourceTypeName;
         if (param != null)
         {
             foreach (MethodParamInfo p in param)

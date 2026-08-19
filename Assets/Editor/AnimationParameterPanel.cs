@@ -2,7 +2,6 @@
 using System;
 using UnityEditor;
 using UnityEditor.Animations;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -41,21 +40,16 @@ public class AnimationParameterPanel : VisualElement
         title.style.unityFontStyleAndWeight = FontStyle.Bold;
         Add(title);
 
-        ObjectField animatorField = new ObjectField("Animator")
-        {
-            objectType = typeof(Animator),
-            allowSceneObjects = true
-        };
-        animatorField.RegisterValueChangedCallback(evt =>
-        {
-            _animator = evt.newValue as Animator;
-            Refresh();
-        });
-        Add(animatorField);
-
         _listContainer = new VisualElement();
         Add(_listContainer);
 
+        Refresh();
+    }
+
+    // Editor側(VisualScriptingEditorWindow.Initialize)から対象のAnimatorを渡すための入口。
+    public void SetAnimator(Animator animator)
+    {
+        _animator = animator;
         Refresh();
     }
 

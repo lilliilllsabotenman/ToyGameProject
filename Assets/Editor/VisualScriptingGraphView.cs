@@ -67,26 +67,29 @@ public class VisualScriptingGraphView : GraphView
     private void PopulateContextualMenu(ContextualMenuPopulateEvent evt)
     {
         VisualScriptingGraphData graphData = GraphSerializer.GetCurrent(this);
-        Type sourceType = graphData != null && !string.IsNullOrEmpty(graphData.TargetTypeName)
-            ? Type.GetType(graphData.TargetTypeName)
-            : null;
 
-        foreach (string actionName in NodeMethodOptions.GetActionNames(sourceType))
+        foreach (Type sourceType in NodeMethodOptions.GetDerivedTypes<INodeActionSource>())
         {
-            string actionDisplayName = NodeMethodOptions.GetActionDisplayName(sourceType, actionName);
-            evt.menu.AppendAction("アクション追加/" + actionDisplayName, _ => AddElement(new ActionNode(actionName, NodeMethodOptions.GetMethodParams(sourceType, actionName), NodeMethodOptions.GetReturnType(sourceType, actionName), displayName: actionDisplayName)));
-        }
+            string sourceTypeName = sourceType.AssemblyQualifiedName;
+            string sourceDisplayName = NodeMethodOptions.GetSourceDisplayName(sourceType);
 
-        foreach (string conditionName in NodeMethodOptions.GetConditionNames(sourceType))
-        {
-            string conditionDisplayName = NodeMethodOptions.GetConditionDisplayName(sourceType, conditionName);
-            evt.menu.AppendAction("条件追加/" + conditionDisplayName, _ => AddElement(new ConditionNode(conditionName, NodeMethodOptions.GetMethodParams(sourceType, conditionName), displayName: conditionDisplayName)));
-        }
+            foreach (string actionName in NodeMethodOptions.GetMethodNames<VisualScriptingActionAttribute>(sourceType))
+            {
+                string actionDisplayName = NodeMethodOptions.GetDisplayName<VisualScriptingActionAttribute>(sourceType, actionName);
+                evt.menu.AppendAction($"アクション追加/{sourceDisplayName}/{actionDisplayName}", _ => AddElement(new ActionNode(actionName, NodeMethodOptions.GetMethodParams(sourceType, actionName), NodeMethodOptions.GetReturnType(sourceType, actionName), displayName: actionDisplayName, sourceTypeName: sourceTypeName)));
+            }
 
-        foreach (string getterName in NodeMethodOptions.GetGetterNames(sourceType))
-        {
-            string getterDisplayName = NodeMethodOptions.GetDisplayName(sourceType, getterName);
-            evt.menu.AppendAction("取得追加/" + getterDisplayName, _ => AddElement(new GetterNode(getterName, NodeMethodOptions.GetMethodParams(sourceType, getterName), NodeMethodOptions.GetReturnType(sourceType, getterName), displayName: getterDisplayName)));
+            foreach (string conditionName in NodeMethodOptions.GetMethodNames<VisualScriptingConditionAttribute>(sourceType))
+            {
+                string conditionDisplayName = NodeMethodOptions.GetDisplayName<VisualScriptingConditionAttribute>(sourceType, conditionName);
+                evt.menu.AppendAction($"条件追加/{sourceDisplayName}/{conditionDisplayName}", _ => AddElement(new ConditionNode(conditionName, NodeMethodOptions.GetMethodParams(sourceType, conditionName), displayName: conditionDisplayName, sourceTypeName: sourceTypeName)));
+            }
+
+            foreach (string getterName in NodeMethodOptions.GetMethodNames<VisualScriptingGetter>(sourceType))
+            {
+                string getterDisplayName = NodeMethodOptions.GetDisplayName<VisualScriptingGetter>(sourceType, getterName);
+                evt.menu.AppendAction($"取得追加/{sourceDisplayName}/{getterDisplayName}", _ => AddElement(new GetterNode(getterName, NodeMethodOptions.GetMethodParams(sourceType, getterName), NodeMethodOptions.GetReturnType(sourceType, getterName), displayName: getterDisplayName, sourceTypeName: sourceTypeName)));
+            }
         }
 
         evt.menu.AppendAction("制御追加/繰り返し(For)", _ => AddElement(new ForNode()));

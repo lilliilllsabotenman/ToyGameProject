@@ -10,11 +10,10 @@ public class NodeRunner : MonoBehaviour, INodeActionSource
 
     public GameObject Owner => this.gameObject;
 
-    [SerializeField]private Rigidbody rgidbody;
-    [SerializeField] private Animator animator;
-
     private void Start()
     {
+        Animator animator = this.GetComponent<Animator>();
+
         if (GraphData == null)
         {
             Debug.LogError("GraphDataがSetされていません");

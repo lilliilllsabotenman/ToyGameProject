@@ -17,8 +17,11 @@ public class ActionNode : BaseNode
         }
     }
 
-    public ActionNode(string initialMethodName, List<MethodParamInfo> param = null, Type returnType = null, List<NodeParamEntry> savedParams = null, string displayName = null) : base("Action")
+    public string SourceTypeName;
+
+    public ActionNode(string initialMethodName, List<MethodParamInfo> param = null, Type returnType = null, List<NodeParamEntry> savedParams = null, string displayName = null, string sourceTypeName = null) : base("Action")
     {
+        SourceTypeName = sourceTypeName;
         inputContainer.Add(CreateExecPort(Direction.Input, Port.Capacity.Multi));
         outputContainer.Add(CreateExecPort(Direction.Output, Port.Capacity.Multi));
 

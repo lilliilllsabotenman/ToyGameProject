@@ -13,143 +13,110 @@ MonoBehaviour:
   m_Name: GraphData
   m_EditorClassIdentifier: Assembly-CSharp::VisualScriptingGraphDataBase
   data:
-  - Name: CrouchLevel
-    ParameterType: 1
-    Nodes:
-    - rid: 8894428218824327237
-    - rid: 8894428218824327238
-    Edges:
-    - OutputNodeGuid: 4fab194b-cc2e-49db-9a28-a4bc394f08a6
-      OutputPortName: Out
-      InputNodeGuid: 11d00a43-ac18-4a9b-a906-77852f853185
-      InputPortName: In
-    Members: []
-    TargetTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-  - Name: Speed
-    ParameterType: 1
-    Nodes:
-    - rid: 8894428218824327287
-    - rid: 8894428218824327288
-    Edges:
-    - OutputNodeGuid: 67890f71-3144-46da-bc24-b348e1227e1e
-      OutputPortName: Out
-      InputNodeGuid: d350637d-8efe-4d6a-9043-10f6af1278c6
-      InputPortName: In
-    Members: []
-    TargetTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-  - Name: Jump
-    ParameterType: 4
-    Nodes:
-    - rid: 8894428218824327253
-    - rid: 8894428218824327254
-    Edges:
-    - OutputNodeGuid: 102d6eda-53e7-45a7-8cb7-899063308d59
-      OutputPortName: Out
-      InputNodeGuid: e42e22fd-86fe-4439-bc2d-dfe9fb0f8bee
-      InputPortName: In
-    Members: []
-    TargetTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
   - Name: Crouch_02
     ParameterType: 4
     Nodes:
-    - rid: 8894428218824327255
-    - rid: 8894428218824327256
+    - rid: 8894428274201198668
+    - rid: 8894428274201198669
     Edges:
-    - OutputNodeGuid: b76d47ca-ff2c-43c8-929d-0d92f8603d74
+    - OutputNodeGuid: 3bb1ac8f-8378-46cc-9f37-03a0f60f8ba8
       OutputPortName: Out
-      InputNodeGuid: 6e060fa1-5f2c-4974-bd97-5e98b680589d
+      InputNodeGuid: 022a46d5-7cd3-4201-a204-3d37aa35e676
       InputPortName: In
     Members: []
-    TargetTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
+  - Name: Speed
+    ParameterType: 1
+    Nodes:
+    - rid: 8894428274201198670
+    - rid: 8894428274201198671
+    Edges:
+    - OutputNodeGuid: 87e91c13-0f36-430f-9e9b-7d6b24f30fe6
+      OutputPortName: Out
+      InputNodeGuid: cfa2ae95-29cf-4afb-90be-c155bf7ee2c3
+      InputPortName: In
+    Members: []
   - Name: Ground
     ParameterType: 4
     Nodes:
-    - rid: 8894428218824327257
-    - rid: 8894428218824327258
+    - rid: 8894428274201198680
+    - rid: 8894428274201198681
     Edges:
-    - OutputNodeGuid: 4c7b6031-20b2-4e59-bca0-296fee2a5dc7
+    - OutputNodeGuid: f635e70e-b4b3-4ff5-b1e4-5d2d6e818900
       OutputPortName: Out
-      InputNodeGuid: ae2fd502-1f7f-4ce7-86f4-ee00cd6757e0
+      InputNodeGuid: cf367cc0-8536-40a5-985d-847ab398ef20
       InputPortName: In
     Members: []
-    TargetTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-  - Name: Crouch
+  - Name: Jump
     ParameterType: 4
     Nodes:
-    - rid: 8894428218824327259
-    - rid: 8894428218824327260
+    - rid: 8894428274201198674
+    - rid: 8894428274201198675
     Edges:
-    - OutputNodeGuid: 9ebf3da7-6ed1-4385-90bc-4e229a68daa0
+    - OutputNodeGuid: c6434718-65ef-4ce6-838d-bd118e965b60
       OutputPortName: Out
-      InputNodeGuid: 49267fe4-79b7-4c4b-bcfe-52ea707d4d17
+      InputNodeGuid: 7b75acbd-1075-411c-bbb4-fa082133e7b9
       InputPortName: In
     Members: []
-    TargetTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-  - Name: GetAction
-    ParameterType: 4
-    Nodes:
-    - rid: 8894428218824327261
-    - rid: 8894428218824327262
-    Edges:
-    - OutputNodeGuid: 40f4073f-bb86-4cd2-9d9f-8d3edb27690f
-      OutputPortName: Out
-      InputNodeGuid: 419104ea-37f6-47ca-9ffe-f0f5a890408f
-      InputPortName: In
-    Members: []
-    TargetTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-  - Name: Dash
-    ParameterType: 4
-    Nodes:
-    - rid: 8894428218824327271
-    - rid: 8894428218824327272
-    Edges:
-    - OutputNodeGuid: 21594c50-5dc0-46b4-bcb7-9796a8827080
-      OutputPortName: Out
-      InputNodeGuid: 5d25f083-578e-4058-b442-b963f7afc0df
-      InputPortName: In
-    Members: []
-    TargetTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
-  - Name: Stand
-    ParameterType: 4
-    Nodes:
-    - rid: 8894428218824327265
-    - rid: 8894428218824327266
-    Edges:
-    - OutputNodeGuid: 284b5e67-c028-493b-aced-0fdc99b53b02
-      OutputPortName: Out
-      InputNodeGuid: e0a0b1b8-31fa-4ae7-a608-c89de18b6869
-      InputPortName: In
-    Members: []
-    TargetTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
   - Name: Move
     ParameterType: 4
     Nodes:
-    - rid: 8894428218824327267
-    - rid: 8894428218824327268
+    - rid: 8894428274201198676
+    - rid: 8894428274201198677
     Edges:
-    - OutputNodeGuid: 876e4c9b-8500-4324-b4a1-d486297493fb
+    - OutputNodeGuid: 30a68a97-35e6-45f0-96cd-0366855b7519
       OutputPortName: Out
-      InputNodeGuid: 702d6b57-c751-451a-b7bb-5ffa506f0cde
+      InputNodeGuid: 55a21d20-3d9e-4912-b9b7-3d661e185e25
       InputPortName: In
     Members: []
-    TargetTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-      PublicKeyToken=null
+  - Name: Dash
+    ParameterType: 4
+    Nodes:
+    - rid: 8894428274201198678
+    - rid: 8894428274201198679
+    Edges:
+    - OutputNodeGuid: 6294cd38-7469-4e69-b444-ef580af9166e
+      OutputPortName: Out
+      InputNodeGuid: 43588ff4-6237-4c0b-ab8c-4fa146f84898
+      InputPortName: In
+    Members: []
   references:
     version: 2
     RefIds:
-    - rid: 8894428218824327237
+    - rid: 8894428274201198668
       type: {class: StartNodeData, ns: , asm: Assembly-CSharp}
       data:
-        Guid: 4fab194b-cc2e-49db-9a28-a4bc394f08a6
+        Guid: 3bb1ac8f-8378-46cc-9f37-03a0f60f8ba8
+        Title: "\u958B\u59CB"
+        Position:
+          serializedVersion: 2
+          x: 100
+          y: 200
+          width: 71
+          height: 78
+        Params: []
+    - rid: 8894428274201198669
+      type: {class: ActionNodeData, ns: , asm: Assembly-CSharp}
+      data:
+        Guid: 022a46d5-7cd3-4201-a204-3d37aa35e676
+        Title: "\u81EA\u5206\u306E\u30A2\u30CB\u30E1\u30FC\u30B7\u30E7\u30F3\u30D1\u30E9\u30E1\u30FC\u30BF\u30FC(Bool)\u3092\u8A2D\u5B9A"
+        Position:
+          serializedVersion: 2
+          x: 320
+          y: 200
+          width: 269
+          height: 126
+        Params:
+        - Key: name
+          Value: Crouch_02
+        - Key: value
+          Value: 
+        MethodKey: SetOwnerBool
+        SourceTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+          PublicKeyToken=null
+    - rid: 8894428274201198670
+      type: {class: StartNodeData, ns: , asm: Assembly-CSharp}
+      data:
+        Guid: 87e91c13-0f36-430f-9e9b-7d6b24f30fe6
         Title: Start
         Position:
           serializedVersion: 2
@@ -158,10 +125,10 @@ MonoBehaviour:
           width: 0
           height: 0
         Params: []
-    - rid: 8894428218824327238
+    - rid: 8894428274201198671
       type: {class: ActionNodeData, ns: , asm: Assembly-CSharp}
       data:
-        Guid: 11d00a43-ac18-4a9b-a906-77852f853185
+        Guid: cfa2ae95-29cf-4afb-90be-c155bf7ee2c3
         Title: SetOwnerFloat
         Position:
           serializedVersion: 2
@@ -171,12 +138,14 @@ MonoBehaviour:
           height: 0
         Params:
         - Key: name
-          Value: CrouchLevel
+          Value: Speed
         MethodKey: SetOwnerFloat
-    - rid: 8894428218824327253
+        SourceTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+          PublicKeyToken=null
+    - rid: 8894428274201198674
       type: {class: StartNodeData, ns: , asm: Assembly-CSharp}
       data:
-        Guid: 102d6eda-53e7-45a7-8cb7-899063308d59
+        Guid: c6434718-65ef-4ce6-838d-bd118e965b60
         Title: Start
         Position:
           serializedVersion: 2
@@ -185,10 +154,10 @@ MonoBehaviour:
           width: 0
           height: 0
         Params: []
-    - rid: 8894428218824327254
+    - rid: 8894428274201198675
       type: {class: ActionNodeData, ns: , asm: Assembly-CSharp}
       data:
-        Guid: e42e22fd-86fe-4439-bc2d-dfe9fb0f8bee
+        Guid: 7b75acbd-1075-411c-bbb4-fa082133e7b9
         Title: SetOwnerBool
         Position:
           serializedVersion: 2
@@ -200,10 +169,12 @@ MonoBehaviour:
         - Key: name
           Value: Jump
         MethodKey: SetOwnerBool
-    - rid: 8894428218824327255
+        SourceTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+          PublicKeyToken=null
+    - rid: 8894428274201198676
       type: {class: StartNodeData, ns: , asm: Assembly-CSharp}
       data:
-        Guid: b76d47ca-ff2c-43c8-929d-0d92f8603d74
+        Guid: 30a68a97-35e6-45f0-96cd-0366855b7519
         Title: Start
         Position:
           serializedVersion: 2
@@ -212,145 +183,10 @@ MonoBehaviour:
           width: 0
           height: 0
         Params: []
-    - rid: 8894428218824327256
+    - rid: 8894428274201198677
       type: {class: ActionNodeData, ns: , asm: Assembly-CSharp}
       data:
-        Guid: 6e060fa1-5f2c-4974-bd97-5e98b680589d
-        Title: SetOwnerBool
-        Position:
-          serializedVersion: 2
-          x: 320
-          y: 200
-          width: 0
-          height: 0
-        Params:
-        - Key: name
-          Value: Crouch_02
-        MethodKey: SetOwnerBool
-    - rid: 8894428218824327257
-      type: {class: StartNodeData, ns: , asm: Assembly-CSharp}
-      data:
-        Guid: 4c7b6031-20b2-4e59-bca0-296fee2a5dc7
-        Title: Start
-        Position:
-          serializedVersion: 2
-          x: 100
-          y: 200
-          width: 0
-          height: 0
-        Params: []
-    - rid: 8894428218824327258
-      type: {class: ActionNodeData, ns: , asm: Assembly-CSharp}
-      data:
-        Guid: ae2fd502-1f7f-4ce7-86f4-ee00cd6757e0
-        Title: SetOwnerBool
-        Position:
-          serializedVersion: 2
-          x: 320
-          y: 200
-          width: 0
-          height: 0
-        Params:
-        - Key: name
-          Value: Ground
-        MethodKey: SetOwnerBool
-    - rid: 8894428218824327259
-      type: {class: StartNodeData, ns: , asm: Assembly-CSharp}
-      data:
-        Guid: 9ebf3da7-6ed1-4385-90bc-4e229a68daa0
-        Title: Start
-        Position:
-          serializedVersion: 2
-          x: 100
-          y: 200
-          width: 0
-          height: 0
-        Params: []
-    - rid: 8894428218824327260
-      type: {class: ActionNodeData, ns: , asm: Assembly-CSharp}
-      data:
-        Guid: 49267fe4-79b7-4c4b-bcfe-52ea707d4d17
-        Title: SetOwnerBool
-        Position:
-          serializedVersion: 2
-          x: 320
-          y: 200
-          width: 0
-          height: 0
-        Params:
-        - Key: name
-          Value: Crouch
-        MethodKey: SetOwnerBool
-    - rid: 8894428218824327261
-      type: {class: StartNodeData, ns: , asm: Assembly-CSharp}
-      data:
-        Guid: 40f4073f-bb86-4cd2-9d9f-8d3edb27690f
-        Title: Start
-        Position:
-          serializedVersion: 2
-          x: 100
-          y: 200
-          width: 0
-          height: 0
-        Params: []
-    - rid: 8894428218824327262
-      type: {class: ActionNodeData, ns: , asm: Assembly-CSharp}
-      data:
-        Guid: 419104ea-37f6-47ca-9ffe-f0f5a890408f
-        Title: SetOwnerBool
-        Position:
-          serializedVersion: 2
-          x: 320
-          y: 200
-          width: 0
-          height: 0
-        Params:
-        - Key: name
-          Value: GetAction
-        MethodKey: SetOwnerBool
-    - rid: 8894428218824327265
-      type: {class: StartNodeData, ns: , asm: Assembly-CSharp}
-      data:
-        Guid: 284b5e67-c028-493b-aced-0fdc99b53b02
-        Title: Start
-        Position:
-          serializedVersion: 2
-          x: 100
-          y: 200
-          width: 0
-          height: 0
-        Params: []
-    - rid: 8894428218824327266
-      type: {class: ActionNodeData, ns: , asm: Assembly-CSharp}
-      data:
-        Guid: e0a0b1b8-31fa-4ae7-a608-c89de18b6869
-        Title: SetOwnerBool
-        Position:
-          serializedVersion: 2
-          x: 320
-          y: 200
-          width: 0
-          height: 0
-        Params:
-        - Key: name
-          Value: Stand
-        MethodKey: SetOwnerBool
-    - rid: 8894428218824327267
-      type: {class: StartNodeData, ns: , asm: Assembly-CSharp}
-      data:
-        Guid: 876e4c9b-8500-4324-b4a1-d486297493fb
-        Title: Start
-        Position:
-          serializedVersion: 2
-          x: 100
-          y: 200
-          width: 0
-          height: 0
-        Params: []
-    - rid: 8894428218824327268
-      type: {class: ActionNodeData, ns: , asm: Assembly-CSharp}
-      data:
-        Guid: 702d6b57-c751-451a-b7bb-5ffa506f0cde
+        Guid: 55a21d20-3d9e-4912-b9b7-3d661e185e25
         Title: SetOwnerBool
         Position:
           serializedVersion: 2
@@ -362,10 +198,41 @@ MonoBehaviour:
         - Key: name
           Value: Move
         MethodKey: SetOwnerBool
-    - rid: 8894428218824327271
+        SourceTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+          PublicKeyToken=null
+    - rid: 8894428274201198678
       type: {class: StartNodeData, ns: , asm: Assembly-CSharp}
       data:
-        Guid: 21594c50-5dc0-46b4-bcb7-9796a8827080
+        Guid: 6294cd38-7469-4e69-b444-ef580af9166e
+        Title: Start
+        Position:
+          serializedVersion: 2
+          x: 100
+          y: 200
+          width: 0
+          height: 0
+        Params: []
+    - rid: 8894428274201198679
+      type: {class: ActionNodeData, ns: , asm: Assembly-CSharp}
+      data:
+        Guid: 43588ff4-6237-4c0b-ab8c-4fa146f84898
+        Title: SetOwnerBool
+        Position:
+          serializedVersion: 2
+          x: 320
+          y: 200
+          width: 0
+          height: 0
+        Params:
+        - Key: name
+          Value: Dash
+        MethodKey: SetOwnerBool
+        SourceTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+          PublicKeyToken=null
+    - rid: 8894428274201198680
+      type: {class: StartNodeData, ns: , asm: Assembly-CSharp}
+      data:
+        Guid: f635e70e-b4b3-4ff5-b1e4-5d2d6e818900
         Title: "\u958B\u59CB"
         Position:
           serializedVersion: 2
@@ -374,49 +241,22 @@ MonoBehaviour:
           width: 71
           height: 78
         Params: []
-    - rid: 8894428218824327272
+    - rid: 8894428274201198681
       type: {class: ActionNodeData, ns: , asm: Assembly-CSharp}
       data:
-        Guid: 5d25f083-578e-4058-b442-b963f7afc0df
+        Guid: cf367cc0-8536-40a5-985d-847ab398ef20
         Title: "\u81EA\u5206\u306E\u30A2\u30CB\u30E1\u30FC\u30B7\u30E7\u30F3\u30D1\u30E9\u30E1\u30FC\u30BF\u30FC(Bool)\u3092\u8A2D\u5B9A"
         Position:
           serializedVersion: 2
-          x: 304
+          x: 337
           y: 200
           width: 262
           height: 126
         Params:
         - Key: name
-          Value: Dash
+          Value: Ground
         - Key: value
           Value: 
         MethodKey: SetOwnerBool
-    - rid: 8894428218824327287
-      type: {class: StartNodeData, ns: , asm: Assembly-CSharp}
-      data:
-        Guid: 67890f71-3144-46da-bc24-b348e1227e1e
-        Title: "\u958B\u59CB"
-        Position:
-          serializedVersion: 2
-          x: 100
-          y: 200
-          width: 71
-          height: 78
-        Params: []
-    - rid: 8894428218824327288
-      type: {class: ActionNodeData, ns: , asm: Assembly-CSharp}
-      data:
-        Guid: d350637d-8efe-4d6a-9043-10f6af1278c6
-        Title: "\u81EA\u5206\u306E\u30A2\u30CB\u30E1\u30FC\u30B7\u30E7\u30F3\u30D1\u30E9\u30E1\u30FC\u30BF\u30FC(Float)\u3092\u8A2D\u5B9A"
-        Position:
-          serializedVersion: 2
-          x: 320
-          y: 200
-          width: 265
-          height: 126
-        Params:
-        - Key: name
-          Value: Speed
-        - Key: value
-          Value: 
-        MethodKey: SetOwnerFloat
+        SourceTypeName: DefaultNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+          PublicKeyToken=null

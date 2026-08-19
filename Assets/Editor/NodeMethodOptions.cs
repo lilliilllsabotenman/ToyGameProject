@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEditor;
 
 public class MethodParamInfo
 {
@@ -12,40 +13,29 @@ public class MethodParamInfo
 
 public static class NodeMethodOptions
 {
-    public static List<string> GetActionNames(Type sourceType)
+    // TBaseを継承/実装した、abstractでもジェネリック定義でもない型を全探索して返す。
+    public static List<Type> GetDerivedTypes<TBase>()
     {
-        return GetMethodNames(sourceType, typeof(VisualScriptingActionAttribute));
+        return TypeCache.GetTypesDerivedFrom<TBase>()
+            .Where(t => !t.IsAbstract && !t.IsGenericTypeDefinition)
+            .OrderBy(t => t.Name)
+            .ToList();
     }
 
-    public static List<string> GetGetterNames(Type sourceType)
-    {
-        return GetMethodNames(sourceType, typeof(VisualScriptingGetter));
-    }
-
-    public static List<string> GetConditionNames(Type sourceType)
-    {
-        return GetMethodNames(sourceType, typeof(VisualScriptingConditionAttribute));
-    }
-
-    private static List<string> GetMethodNames(Type sourceType, Type attributeType)
+    public static List<string> GetMethodNames<TAttribute>(Type sourceType) where TAttribute : Attribute
     {
         if (sourceType == null) return new List<string>();
 
         return sourceType
             .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .Where(m => m.GetCustomAttribute(attributeType) != null)
+            .Where(m => m.GetCustomAttribute<TAttribute>() != null)
             .Select(m => m.Name)
             .ToList();
     }
 
     public static List<MethodParamInfo> GetMethodParams(Type sourceType, string methodName)
     {
-        if (sourceType == null) return new List<MethodParamInfo>();
-
-        MethodInfo method = sourceType
-            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .FirstOrDefault(m => m.Name == methodName);
-
+        MethodInfo method = FindMethod(sourceType, methodName);
         if (method == null) return new List<MethodParamInfo>();
 
         return method.GetParameters()
@@ -55,62 +45,40 @@ public static class NodeMethodOptions
 
     public static Type GetReturnType(Type sourceType, string methodName)
     {
-        if (sourceType == null) return null;
-
-        MethodInfo method = sourceType
-            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .FirstOrDefault(m => m.Name == methodName);
-
-        return method?.ReturnType;
+        return FindMethod(sourceType, methodName)?.ReturnType;
     }
 
     public static bool IsGetter(Type sourceType, string methodName)
     {
-        if (sourceType == null) return false;
-
-        MethodInfo method = sourceType
-            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .FirstOrDefault(m => m.Name == methodName);
-
+        MethodInfo method = FindMethod(sourceType, methodName);
         return method != null && method.GetCustomAttribute(typeof(VisualScriptingGetter)) != null;
     }
 
-    // GetterのDisplayNameが設定されていればそれを、無ければメソッド名そのものを返す。
-    public static string GetDisplayName(Type sourceType, string methodName)
+    // TAttributeのDisplayNameが設定されていればそれを、無ければメソッド名そのものを返す。
+    // Getter/Action/Conditionの各DisplayName取得を1本に集約したもの。
+    public static string GetDisplayName<TAttribute>(Type sourceType, string methodName)
+        where TAttribute : Attribute, IDisplayNameAttribute
     {
-        if (sourceType == null) return methodName;
-
-        MethodInfo method = sourceType
-            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .FirstOrDefault(m => m.Name == methodName);
-
-        string displayName = method?.GetCustomAttribute<VisualScriptingGetter>()?.DisplayName;
-        return string.IsNullOrEmpty(displayName) ? methodName : displayName;
-    }   
-
-    // ActionのDisplayNameが設定されていればそれを、無ければメソッド名そのものを返す。
-    public static string GetActionDisplayName(Type sourceType, string methodName)
-    {
-        if (sourceType == null) return methodName;
-
-        MethodInfo method = sourceType
-            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-            .FirstOrDefault(m => m.Name == methodName);
-
-        string displayName = method?.GetCustomAttribute<VisualScriptingActionAttribute>()?.DisplayName;
+        MethodInfo method = FindMethod(sourceType, methodName);
+        string displayName = method?.GetCustomAttribute<TAttribute>()?.DisplayName;
         return string.IsNullOrEmpty(displayName) ? methodName : displayName;
     }
 
-    // ConditionのDisplayNameが設定されていればそれを、無ければメソッド名そのものを返す。
-    public static string GetConditionDisplayName(Type sourceType, string methodName)
+    // VisualScriptingSourceのDisplayNameが設定されていればそれを、無ければクラス名そのものを返す。
+    public static string GetSourceDisplayName(Type sourceType)
     {
-        if (sourceType == null) return methodName;
+        if (sourceType == null) return null;
 
-        MethodInfo method = sourceType
+        string displayName = sourceType.GetCustomAttribute<VisualScriptingSourceAttribute>()?.DisplayName;
+        return string.IsNullOrEmpty(displayName) ? sourceType.Name : displayName;
+    }
+
+    private static MethodInfo FindMethod(Type sourceType, string methodName)
+    {
+        if (sourceType == null) return null;
+
+        return sourceType
             .GetMethods(BindingFlags.Public | BindingFlags.Instance)
             .FirstOrDefault(m => m.Name == methodName);
-
-        string displayName = method?.GetCustomAttribute<VisualScriptingConditionAttribute>()?.DisplayName;
-        return string.IsNullOrEmpty(displayName) ? methodName : displayName;
     }
 }

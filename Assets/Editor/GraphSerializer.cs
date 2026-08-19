@@ -30,9 +30,15 @@ public static class GraphSerializer
             return;
         }
 
-        if (!CycleDetector.HasNoCycles(edgeList, out List<string> cycles))
+        if (!CycleDetector.HasNoDataCycles(edgeList, out List<string> dataCycles))
         {
-            Debug.LogWarning("循環参照があるため保存を中断しました(実行時にクラッシュする可能性があります): " + string.Join(", ", cycles));
+            Debug.LogWarning("循環参照(データ配線)があるため保存を中断しました(実行時にクラッシュする可能性があります): " + string.Join(", ", dataCycles));
+            return;
+        }
+
+        if (!CycleDetector.HasNoExecCycles(edgeList, out List<string> execCycles))
+        {
+            Debug.LogWarning("循環参照(Exec配線)があるため保存を中断しました(実行時に無限ループでフリーズする可能性があります): " + string.Join(", ", execCycles));
             return;
         }
 
@@ -51,9 +57,9 @@ public static class GraphSerializer
         {
             BaseNodeData nodeData = node switch
             {
-                ActionNode actionNode => new ActionNodeData { MethodKey = actionNode.ActionKey, Params = CloneParams(actionNode.Params) },
-                ConditionNode conditionNode => new ConditionNodeData { MethodKey = conditionNode.ConditionKey, Params = CloneParams(conditionNode.Params) },
-                GetterNode getterNode => new ActionNodeData { MethodKey = getterNode.ActionKey, Params = CloneParams(getterNode.Params) },
+                ActionNode actionNode => new ActionNodeData { MethodKey = actionNode.ActionKey, Params = CloneParams(actionNode.Params), SourceTypeName = actionNode.SourceTypeName },
+                ConditionNode conditionNode => new ConditionNodeData { MethodKey = conditionNode.ConditionKey, Params = CloneParams(conditionNode.Params), SourceTypeName = conditionNode.SourceTypeName },
+                GetterNode getterNode => new ActionNodeData { MethodKey = getterNode.ActionKey, Params = CloneParams(getterNode.Params), SourceTypeName = getterNode.SourceTypeName },
                 GetMemberNode getMemberNode => new GetMemberNodeData { MemberName = getMemberNode.MemberName },
                 SetMemberNode setMemberNode => new SetMemberNodeData { MemberName = setMemberNode.MemberName },
                 ForNode forNode => new ForNodeData { Params = CloneParams(forNode.Params) },
@@ -87,17 +93,20 @@ public static class GraphSerializer
 
         WarnMissingParameters(data);
 
-        // Nodes/Edges中身は今回のSaveで新規生成されたオブジェクトなので、入れ物(List)だけ別に包めば安全なスナップショットになる。
-        VisualScriptingGraphData snapshot = new()
+        graphView.History?.AddHistory(graphView.CurrentParameterName, BuildSnapshot(data));
+    }
+
+    // Nodes/Edges中身は毎回新規生成されたオブジェクトなので、入れ物(List)だけ別に包めば安全なスナップショットになる。
+    private static VisualScriptingGraphData BuildSnapshot(VisualScriptingGraphData data)
+    {
+        return new()
         {
             Name = data.Name,
             ParameterType = data.ParameterType,
-            TargetTypeName = data.TargetTypeName,
             Nodes = new List<BaseNodeData>(data.Nodes),
             Edges = new List<EdgeData>(data.Edges),
             Members = new List<MemberVariableData>(data.Members)
         };
-        graphView.History?.AddHistory(graphView.CurrentParameterName, snapshot);
     }
 
     // NodeParamEntryは編集中のライブなオブジェクトなので、保存データ側は中身までコピーして独立させる。
@@ -108,23 +117,69 @@ public static class GraphSerializer
 
     public static void Load(VisualScriptingGraphView graphView, AnimatorParameterInfo info)
     {
+        VisualScriptingGraphDataBase baseData = LoadOrCreateBase();
+        VisualScriptingGraphData data = baseData.GetData(info.Name);
+        if (data == null)
+        {
+            data = CreateNewEntry(info.Name, info.Type);
+            baseData.data.Add(data);
+            EditorUtility.SetDirty(baseData);
+            AssetDatabase.SaveAssets();
+        }
+
+        graphView.CurrentParameterName = info.Name;
+
+        // このセッションで初めて開くパラメーターなら、今の状態を履歴の起点として積んでおく(でないと最初の編集がUndo不可になる)。
+        if (graphView.History != null && graphView.History.GetData(info.Name) == null)
+        {
+            graphView.History.AddHistory(info.Name, BuildSnapshot(data));
+        }
+
+        RebuildView(graphView, data);
+    }
+
+    // 履歴を1つ遡って復元する。これ以上遡れなければ何もしない。
+    public static void Undo(VisualScriptingGraphView graphView)
+    {
+        if (string.IsNullOrEmpty(graphView.CurrentParameterName)) return;
+        if (graphView.History == null) return;
+
+        VisualScriptingGraphDataBase baseData = LoadOrCreateBase();
+        VisualScriptingGraphData data = baseData.GetData(graphView.CurrentParameterName);
+        if (data == null) return;
+
+        if (!graphView.History.Undo(graphView.CurrentParameterName, data)) return;
+
+        EditorUtility.SetDirty(baseData);
+        AssetDatabase.SaveAssets();
+
+        RebuildView(graphView, data);
+    }
+
+    // Undoで退避した内容を1つ戻す。退避が無ければ何もしない。
+    public static void Redo(VisualScriptingGraphView graphView)
+    {
+        if (string.IsNullOrEmpty(graphView.CurrentParameterName)) return;
+        if (graphView.History == null) return;
+
+        VisualScriptingGraphDataBase baseData = LoadOrCreateBase();
+        VisualScriptingGraphData data = baseData.GetData(graphView.CurrentParameterName);
+        if (data == null) return;
+
+        if (!graphView.History.Redo(graphView.CurrentParameterName, data)) return;
+
+        EditorUtility.SetDirty(baseData);
+        AssetDatabase.SaveAssets();
+
+        RebuildView(graphView, data);
+    }
+
+    // dataの内容に合わせてGraphViewの表示(ノード/エッジ)を作り直す。この間はAutoSaveを止める。
+    private static void RebuildView(VisualScriptingGraphView graphView, VisualScriptingGraphData data)
+    {
         graphView.IsLoading = true;
         try
         {
-            VisualScriptingGraphDataBase baseData = LoadOrCreateBase();
-            VisualScriptingGraphData data = baseData.GetData(info.Name);
-            if (data == null)
-            {
-                data = CreateNewEntry(info.Name, info.Type);
-                baseData.data.Add(data);
-                EditorUtility.SetDirty(baseData);
-                AssetDatabase.SaveAssets();
-            }
-
-            graphView.CurrentParameterName = info.Name;
-
-            Type sourceType = !string.IsNullOrEmpty(data.TargetTypeName) ? Type.GetType(data.TargetTypeName) : null;
-
             graphView.DeleteElements(graphView.graphElements.ToList());
 
             Dictionary<string, BaseNode> nodeMap = new Dictionary<string, BaseNode>();
@@ -134,23 +189,26 @@ public static class GraphSerializer
                 BaseNode node = nodeData switch
                 {
                     StartNodeData => new StartNode(),
-                    ActionNodeData actionData when NodeMethodOptions.IsGetter(sourceType, actionData.MethodKey) => new GetterNode(
+                    ActionNodeData actionData when NodeMethodOptions.IsGetter(ResolveSourceType(actionData.SourceTypeName), actionData.MethodKey) => new GetterNode(
                         actionData.MethodKey,
-                        NodeMethodOptions.GetMethodParams(sourceType, actionData.MethodKey),
-                        NodeMethodOptions.GetReturnType(sourceType, actionData.MethodKey),
+                        NodeMethodOptions.GetMethodParams(ResolveSourceType(actionData.SourceTypeName), actionData.MethodKey),
+                        NodeMethodOptions.GetReturnType(ResolveSourceType(actionData.SourceTypeName), actionData.MethodKey),
                         actionData.Params,
-                        NodeMethodOptions.GetDisplayName(sourceType, actionData.MethodKey)),
+                        NodeMethodOptions.GetDisplayName<VisualScriptingGetter>(ResolveSourceType(actionData.SourceTypeName), actionData.MethodKey),
+                        actionData.SourceTypeName),
                     ActionNodeData actionData => new ActionNode(
                         actionData.MethodKey,
-                        NodeMethodOptions.GetMethodParams(sourceType, actionData.MethodKey),
-                        NodeMethodOptions.GetReturnType(sourceType, actionData.MethodKey),
+                        NodeMethodOptions.GetMethodParams(ResolveSourceType(actionData.SourceTypeName), actionData.MethodKey),
+                        NodeMethodOptions.GetReturnType(ResolveSourceType(actionData.SourceTypeName), actionData.MethodKey),
                         actionData.Params,
-                        NodeMethodOptions.GetActionDisplayName(sourceType, actionData.MethodKey)),
+                        NodeMethodOptions.GetDisplayName<VisualScriptingActionAttribute>(ResolveSourceType(actionData.SourceTypeName), actionData.MethodKey),
+                        actionData.SourceTypeName),
                     ConditionNodeData conditionData => new ConditionNode(
                         conditionData.MethodKey,
-                        NodeMethodOptions.GetMethodParams(sourceType, conditionData.MethodKey),
+                        NodeMethodOptions.GetMethodParams(ResolveSourceType(conditionData.SourceTypeName), conditionData.MethodKey),
                         conditionData.Params,
-                        NodeMethodOptions.GetConditionDisplayName(sourceType, conditionData.MethodKey)),
+                        NodeMethodOptions.GetDisplayName<VisualScriptingConditionAttribute>(ResolveSourceType(conditionData.SourceTypeName), conditionData.MethodKey),
+                        conditionData.SourceTypeName),
                     GetMemberNodeData getMemberData => new GetMemberNode(getMemberData.MemberName, ResolveMemberType(data, getMemberData.MemberName)),
                     SetMemberNodeData setMemberData => new SetMemberNode(setMemberData.MemberName, ResolveMemberType(data, setMemberData.MemberName)),
                     ForNodeData forData => new ForNode(forData.Params),
@@ -216,7 +274,7 @@ public static class GraphSerializer
     // 新規パラメーター用のデータを作る。Startノードだけ最初から入れておく(ないとLoad時に消える)。
     private static VisualScriptingGraphData CreateNewEntry(string parameterName, AnimatorControllerParameterType type)
     {
-        VisualScriptingGraphData data = new() { Name = parameterName, ParameterType = type, TargetTypeName = typeof(DefaultNode).AssemblyQualifiedName };
+        VisualScriptingGraphData data = new() { Name = parameterName, ParameterType = type };
 
         StartNodeData startNode = new StartNodeData
         {
@@ -242,7 +300,8 @@ public static class GraphSerializer
                 Guid = Guid.NewGuid().ToString(),
                                                Title = methodKey,
                 Position = new Rect(320, 200, 0, 0),
-                MethodKey = methodKey
+                MethodKey = methodKey,
+                SourceTypeName = typeof(DefaultNode).AssemblyQualifiedName
             };
             setParameterNode.SetParam("name", parameterName);
             data.Nodes.Add(setParameterNode);
@@ -264,6 +323,11 @@ public static class GraphSerializer
         MemberVariableData member = data.Members.Find(m => m.Name == memberName);
         if (member == null || string.IsNullOrEmpty(member.TypeName)) return null;
         return Type.GetType(member.TypeName);
+    }
+
+    private static Type ResolveSourceType(string sourceTypeName)
+    {
+        return string.IsNullOrEmpty(sourceTypeName) ? null : Type.GetType(sourceTypeName);
     }
 
     // Action/Conditionノードでキー(MethodKey)が空のまま保存された場合に警告する。

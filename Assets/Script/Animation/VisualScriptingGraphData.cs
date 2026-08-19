@@ -50,6 +50,9 @@ public class ActionNodeData : BaseNodeData
 {
     // GraphExecutorのonActionへ渡されるキー(呼び出すメソッド名)
     public string MethodKey;
+
+    // MethodKeyがどのクラス(INodeActionSource実装)のメソッドか。AssemblyQualifiedNameで保持する。
+    public string SourceTypeName;
 }
 
 [Serializable]
@@ -57,6 +60,9 @@ public class ConditionNodeData : BaseNodeData
 {
     // GraphExecutorのonConditionへ渡されるキー(呼び出すメソッド名)
     public string MethodKey;
+
+    // MethodKeyがどのクラス(INodeActionSource実装)のメソッドか。AssemblyQualifiedNameで保持する。
+    public string SourceTypeName;
 }
 
 [Serializable]
@@ -116,10 +122,6 @@ public class VisualScriptingGraphData
     public List<BaseNodeData> Nodes = new();
     public List<EdgeData> Edges = new();
     public List<MemberVariableData> Members = new();
-
-    // このグラフがAction/Condition/Getterの候補を探す対象クラス(INodeActionSource実装)。
-    // Systemの型は直接シリアライズできないため、AssemblyQualifiedNameで保持する。
-    public string TargetTypeName;
 }
 
 public class VisualScriptingGraphDataBase : ScriptableObject

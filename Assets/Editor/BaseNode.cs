@@ -4,6 +4,11 @@ using UnityEngine.UIElements;
 using System.Collections.Generic;
 using System;
 
+// Execポート専用の型マーカー。実データ型(boolなど)と衝突させず、Exec配線とDataポートをPortCompatibilityで別物として扱うために使う。
+public class ExecFlow
+{
+}
+
 public abstract class BaseNode : Node
 {
     public string NodeGuid;
@@ -27,7 +32,7 @@ public abstract class BaseNode : Node
             Orientation.Horizontal,
             direction,
             capacity,
-            typeof(bool) // Exec接続はboolで型を統一
+            typeof(ExecFlow) // Exec接続専用の型。bool型のDataポートと誤接続できないよう区別する
         );
         port.portName = direction == Direction.Input ? "In" : "Out";
         return port;

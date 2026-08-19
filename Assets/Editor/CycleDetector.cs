@@ -1,20 +1,37 @@
 // Editor/CycleDetector.cs
 using UnityEditor.Experimental.GraphView;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
-// ActionNode同士のデータ配線(Result → パラメータ)が循環していないかを検査する。
-// 循環があると実行時にInvokeActionが無限再帰し、StackOverflowException(catch不能)でクラッシュするため。
+// データ配線(Result → パラメータ)とExec配線(実行順)、それぞれの循環を検査する。
+// データ循環は実行時にInvokeActionが無限再帰し、StackOverflowException(catch不能)でクラッシュする。
+// Exec循環はGraphExecutor.Run()のwhileループが無限ループになり、フリーズする。
 public static class CycleDetector
 {
-    public static bool HasNoCycles(IEnumerable<Edge> edges, out List<string> cycleDescriptions)
+    // GetterNodeもActionNodeDataとして同じ実行経路(InvokeAction)を通るため、ActionNodeだけでなくGetterNodeも対象にする必要がある。
+    public static bool HasNoDataCycles(IEnumerable<Edge> edges, out List<string> cycleDescriptions)
+    {
+        return HasNoCycles(edges, edge =>
+            (edge.output.node is ActionNode || edge.output.node is GetterNode) &&
+            (edge.input.node is ActionNode || edge.input.node is GetterNode) &&
+            edge.output.portName == "Result", out cycleDescriptions);
+    }
+
+    // Exec入力ポートはBaseNode.CreateExecPortで必ず"In"固定(出力側はOut/True/False/Body/Completeとノードごとに異なる)。
+    // そのためinput.portName=="In"だけで、ノード種別を問わずExec配線を判別できる。
+    public static bool HasNoExecCycles(IEnumerable<Edge> edges, out List<string> cycleDescriptions)
+    {
+        return HasNoCycles(edges, edge => edge.input.portName == "In", out cycleDescriptions);
+    }
+
+    private static bool HasNoCycles(IEnumerable<Edge> edges, Func<Edge, bool> isTargetEdge, out List<string> cycleDescriptions)
     {
         Dictionary<Node, List<Node>> dependsOn = new Dictionary<Node, List<Node>>();
 
         foreach (Edge edge in edges)
         {
-            if (edge.output.node is not ActionNode || edge.input.node is not ActionNode) continue;
-            if (edge.output.portName != "Result") continue;
+            if (!isTargetEdge(edge)) continue;
 
             Node consumer = edge.input.node;
             Node source = edge.output.node;
