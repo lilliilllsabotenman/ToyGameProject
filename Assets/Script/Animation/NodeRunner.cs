@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NodeRunner : MonoBehaviour, INodeActionSource
+public class NodeRunner : MonoBehaviour
 {
     // Inspectorで、Save済みの GraphData.asset をここにドラッグ&ドロップする
     public VisualScriptingGraphDataBase GraphData;
@@ -25,8 +25,7 @@ public class NodeRunner : MonoBehaviour, INodeActionSource
             Debug.LogError("Animatorがセットされていません");
             return;
         }
-
-        // 実行するパラメーターの一覧は手動で持たず、Animatorが実際に持つパラメーターから直接引く。
+        
         DefaultNode target = new DefaultNode(Owner);
         foreach (AnimatorControllerParameter parameter in animator.parameters)
         {

@@ -3,7 +3,7 @@ using UnityEngine;
 
 // ノードエディタで標準的に使える汎用アクション/ゲッター群。
 // GameObjectにアタッチしてTargetTypeとして選択する想定。
-[VisualScriptingSource(DisplayName = "基本")]
+[VisualScriptingSource(DisplayName = "基本", IsDefault = true)]
 public class DefaultNode : INodeActionSource
 {
     public GameObject Owner { get; }
@@ -24,6 +24,14 @@ public class DefaultNode : INodeActionSource
 
     }
 
+    // componentが無い場合、Errorを出してfalseを返す。
+    private bool EnsureComponent(Object component, string componentName)
+    {
+        if (component != null) return true;
+        Debug.LogError($"{(Owner != null ? Owner.name : "unknown")}: {componentName}が見つからないため実行できません");
+        return false;
+    }
+
     #region RigidBody
 
     [VisualScriptingGetter(DisplayName = "Rigidbody取得")]
@@ -34,7 +42,11 @@ public class DefaultNode : INodeActionSource
     public float GetSpeed(Rigidbody rb) => rb.linearVelocity.magnitude;
 
     [VisualScriptingGetter(DisplayName = "自分の速さ取得")]
-    public float GetOwnerSpeed() => rigidbody.linearVelocity.magnitude;
+    public float GetOwnerSpeed()
+    {
+        if (!EnsureComponent(rigidbody, "Rigidbody")) return 0f;
+        return rigidbody.linearVelocity.magnitude;
+    }
 
     #endregion
 
@@ -66,16 +78,28 @@ public class DefaultNode : INodeActionSource
     public void SetTrigger(Animator animator, string name) => animator.SetTrigger(name);
 
     [VisualScriptingAction(DisplayName = "自分のアニメーションパラメーター(Float)を設定")]
-    public void SetOwnerFloat(string name, float value) => animator.SetFloat(name, value);
+    public void SetOwnerFloat(string name, float value)
+    {
+        if (EnsureComponent(animator, "Animator")) animator.SetFloat(name, value);
+    }
 
     [VisualScriptingAction(DisplayName = "自分のアニメーションパラメーター(Int)を設定")]
-    public void SetOwnerInteger(string name, int value) => animator.SetInteger(name, value);
+    public void SetOwnerInteger(string name, int value)
+    {
+        if (EnsureComponent(animator, "Animator")) animator.SetInteger(name, value);
+    }
 
     [VisualScriptingAction(DisplayName = "自分のアニメーションパラメーター(Bool)を設定")]
-    public void SetOwnerBool(string name, bool value) => animator.SetBool(name, value);
+    public void SetOwnerBool(string name, bool value)
+    {
+        if (EnsureComponent(animator, "Animator")) animator.SetBool(name, value);
+    }
 
     [VisualScriptingAction(DisplayName = "自分のアニメーションパラメーター(Trigger)を実行")]
-    public void SetOwnerTrigger(string name) => animator.SetTrigger(name);
+    public void SetOwnerTrigger(string name)
+    {
+        if (EnsureComponent(animator, "Animator")) animator.SetTrigger(name);
+    }
 
     #endregion
 
@@ -100,17 +124,6 @@ public class DefaultNode : INodeActionSource
 
     [VisualScriptingAction(DisplayName = "ログ出力")]
     public void _Debug(string Value) => Debug.Log(Value);
-
-    #endregion
-
-    #region Condition
-
-    [VisualScriptingCondition(DisplayName = "もし〜なら")]
-    public ConditionParameter IF(bool condition)
-    {
-        if(condition) return ConditionParameter.True;
-        else return ConditionParameter.False;
-    }
 
     #endregion
 

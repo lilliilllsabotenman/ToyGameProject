@@ -58,10 +58,10 @@ public static class GraphSerializer
             BaseNodeData nodeData = node switch
             {
                 ActionNode actionNode => new ActionNodeData { MethodKey = actionNode.ActionKey, Params = CloneParams(actionNode.Params), SourceTypeName = actionNode.SourceTypeName },
-                ConditionNode conditionNode => new ConditionNodeData { MethodKey = conditionNode.ConditionKey, Params = CloneParams(conditionNode.Params), SourceTypeName = conditionNode.SourceTypeName },
                 GetterNode getterNode => new ActionNodeData { MethodKey = getterNode.ActionKey, Params = CloneParams(getterNode.Params), SourceTypeName = getterNode.SourceTypeName },
                 GetMemberNode getMemberNode => new GetMemberNodeData { MemberName = getMemberNode.MemberName },
                 SetMemberNode setMemberNode => new SetMemberNodeData { MemberName = setMemberNode.MemberName },
+                IfNode ifNode => new IfNodeData { Params = CloneParams(ifNode.Params) },
                 ForNode forNode => new ForNodeData { Params = CloneParams(forNode.Params) },
                 StartNode => new StartNodeData(),
                 _ => null
@@ -203,14 +203,9 @@ public static class GraphSerializer
                         actionData.Params,
                         NodeMethodOptions.GetDisplayName<VisualScriptingActionAttribute>(ResolveSourceType(actionData.SourceTypeName), actionData.MethodKey),
                         actionData.SourceTypeName),
-                    ConditionNodeData conditionData => new ConditionNode(
-                        conditionData.MethodKey,
-                        NodeMethodOptions.GetMethodParams(ResolveSourceType(conditionData.SourceTypeName), conditionData.MethodKey),
-                        conditionData.Params,
-                        NodeMethodOptions.GetDisplayName<VisualScriptingConditionAttribute>(ResolveSourceType(conditionData.SourceTypeName), conditionData.MethodKey),
-                        conditionData.SourceTypeName),
                     GetMemberNodeData getMemberData => new GetMemberNode(getMemberData.MemberName, ResolveMemberType(data, getMemberData.MemberName)),
                     SetMemberNodeData setMemberData => new SetMemberNode(setMemberData.MemberName, ResolveMemberType(data, setMemberData.MemberName)),
+                    IfNodeData ifData => new IfNode(ifData.Params),
                     ForNodeData forData => new ForNode(forData.Params),
                     _ => null
                 };
@@ -340,7 +335,6 @@ public static class GraphSerializer
             bool isMissing = nodeData switch
             {
                 ActionNodeData actionData => string.IsNullOrWhiteSpace(actionData.MethodKey),
-                ConditionNodeData conditionData => string.IsNullOrWhiteSpace(conditionData.MethodKey),
                 _ => false
             };
             if (isMissing)

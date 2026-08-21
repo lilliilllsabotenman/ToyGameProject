@@ -8,21 +8,21 @@ public class GraphExecutor
     private Dictionary<string, string> _edgeMap = new Dictionary<string, string>();
     private string _startGuid;
     private Action<ActionNodeData> _onAction;
-    private Func<ConditionNodeData, string> _onCondition;
+    private Func<IfNodeData, string> _onIf;
     private Action<SetMemberNodeData> _onSetMember;
     private Action<ForNodeData> _onFor;
 
     // メイングラフ用: StartNodeDataを自動検出して開始点にする。
-    public GraphExecutor(VisualScriptingGraphData data, Action<ActionNodeData> onAction, Func<ConditionNodeData, string> onCondition, Action<SetMemberNodeData> onSetMember, Action<ForNodeData> onFor)
-        : this(data, null, onAction, onCondition, onSetMember, onFor)
+    public GraphExecutor(VisualScriptingGraphData data, Action<ActionNodeData> onAction, Func<IfNodeData, string> onIf, Action<SetMemberNodeData> onSetMember, Action<ForNodeData> onFor)
+        : this(data, null, onAction, onIf, onSetMember, onFor)
     {
     }
 
     // Forの本体用: StartNodeDataを持たないため、開始点(Bodyポート先のノード)を明示的に渡す。
-    public GraphExecutor(VisualScriptingGraphData data, string startGuid, Action<ActionNodeData> onAction, Func<ConditionNodeData, string> onCondition, Action<SetMemberNodeData> onSetMember, Action<ForNodeData> onFor)
+    public GraphExecutor(VisualScriptingGraphData data, string startGuid, Action<ActionNodeData> onAction, Func<IfNodeData, string> onIf, Action<SetMemberNodeData> onSetMember, Action<ForNodeData> onFor)
     {
         _onAction = onAction;
-        _onCondition = onCondition;
+        _onIf = onIf;
         _onSetMember = onSetMember;
         _onFor = onFor;
         _startGuid = startGuid;
@@ -75,8 +75,8 @@ public class GraphExecutor
             case SetMemberNodeData setMemberData:
                 _onSetMember?.Invoke(setMemberData);
                 return "Out";
-            case ConditionNodeData conditionData:
-                return _onCondition?.Invoke(conditionData);
+            case IfNodeData ifData:
+                return _onIf?.Invoke(ifData);
             case ForNodeData forData:
                 _onFor?.Invoke(forData);
                 return "Complete";

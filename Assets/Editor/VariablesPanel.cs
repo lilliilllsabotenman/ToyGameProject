@@ -29,7 +29,7 @@ public class VariablesPanel : VisualElement
         style.paddingLeft = 4;
         style.paddingRight = 4;
         style.paddingTop = 4;
-        style.backgroundColor = new Color(0, 0, 0, 0.5f);
+        style.backgroundColor = new Color(0.5f, 0.5f, 0.5f, 1f);
 
         Label title = new Label("Variables");
         title.style.unityFontStyleAndWeight = FontStyle.Bold;

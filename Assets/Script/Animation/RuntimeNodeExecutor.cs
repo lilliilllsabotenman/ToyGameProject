@@ -5,12 +5,6 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
-public enum ConditionParameter
-{
-    True,
-    False
-}
-
 public class RuntimeNodeExecutor
 {
     private GraphExecutor _executor;
@@ -38,7 +32,7 @@ public class RuntimeNodeExecutor
         _executor = new GraphExecutor(
             graphData,
             actionData => InvokeAction(actionData),
-            conditionData => InvokeCondition(conditionData),
+            ifData => EvaluateIf(ifData),
             setMemberData => ExecuteSetMember(setMemberData),
             forData => RunFor(forData));
     }
@@ -61,7 +55,7 @@ public class RuntimeNodeExecutor
                 graphData,
                 bodyEdge.InputNodeGuid,
                 actionData => InvokeAction(actionData),
-                conditionData => InvokeCondition(conditionData),
+                ifData => EvaluateIf(ifData),
                 setMemberData => ExecuteSetMember(setMemberData),
                 innerForData => RunFor(innerForData));
         }
@@ -69,19 +63,34 @@ public class RuntimeNodeExecutor
         return executors;
     }
 
-    // sourceTypeNameからソースインスタンスを解決する。未指定/解決不能なら実行対象の既定インスタンス(_target)にフォールバックする。
-    private INodeActionSource ResolveSource(string sourceTypeName)
+    // 非staticメソッドの実行対象インスタンスを解決する。
+    // IsDefault指定のsourceTypeは登録済み/遅延生成した単一インスタンスを、それ以外はノードの"Target"ポートの配線を辿って解決する。
+    private object ResolveInvokeSource(Type sourceType, ActionNodeData actionData)
     {
-        Type sourceType = string.IsNullOrEmpty(sourceTypeName) ? null : Type.GetType(sourceTypeName);
-        if (sourceType == null) return _target;
-
-        if (!_sourceInstances.TryGetValue(sourceType, out INodeActionSource source))
+        if (_sourceInstances.TryGetValue(sourceType, out INodeActionSource cached))
         {
-            source = (INodeActionSource)Activator.CreateInstance(sourceType, _target.Owner);
-            _sourceInstances[sourceType] = source;
+            return cached;
         }
 
-        return source;
+        bool isDefault = sourceType.GetCustomAttribute<VisualScriptingSourceAttribute>()?.IsDefault ?? false;
+        if (isDefault)
+        {
+            INodeActionSource created = (INodeActionSource)Activator.CreateInstance(sourceType, _target.Owner);
+            _sourceInstances[sourceType] = created;
+            return created;
+        }
+
+        EdgeData incomingEdge = _graphData.Edges
+            .Find(e => e.InputNodeGuid == actionData.Guid && e.InputPortName == "Target");
+        if (incomingEdge == null) return null;
+
+        BaseNodeData sourceNode = _graphData.Nodes.Find(n => n.Guid == incomingEdge.OutputNodeGuid);
+        return sourceNode switch
+        {
+            ActionNodeData sourceActionData => InvokeAction(sourceActionData),
+            GetMemberNodeData sourceMemberData => ResolveMember(sourceMemberData.MemberName),
+            _ => null
+        };
     }
 
     private MethodInfo GetMethod(Type sourceType, string methodName)
@@ -89,7 +98,7 @@ public class RuntimeNodeExecutor
         if (!_methodCaches.TryGetValue(sourceType, out Dictionary<string, MethodInfo> cache))
         {
             cache = sourceType
-                .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
                 .GroupBy(m => m.Name)
                 .ToDictionary(g => g.Key, g => g.First());
             _methodCaches[sourceType] = cache;
@@ -223,9 +232,22 @@ public class RuntimeNodeExecutor
             return cachedResult;
         }
 
-        INodeActionSource source = ResolveSource(actionData.SourceTypeName);
-        MethodInfo method = GetMethod(source.GetType(), actionData.MethodKey);
+        Type sourceType = string.IsNullOrEmpty(actionData.SourceTypeName) ? null : Type.GetType(actionData.SourceTypeName);
+        sourceType ??= _target.GetType();
+
+        MethodInfo method = GetMethod(sourceType, actionData.MethodKey);
         if (method == null) return null;
+
+        object source = null;
+        if (!method.IsStatic)
+        {
+            source = ResolveInvokeSource(sourceType, actionData);
+            if (source == null)
+            {
+                Debug.LogWarning($"'{actionData.MethodKey}'の実行対象(Target)を解決できません: {sourceType.Name}");
+                return null;
+            }
+        }
 
         ParameterInfo[] parameters = method.GetParameters();
         object[] args = new object[parameters.Length];
@@ -239,20 +261,29 @@ public class RuntimeNodeExecutor
         return result;
     }
 
-    private string InvokeCondition(ConditionNodeData conditionData)
+    // Conditionポート(未配線ならParamsのリテラル値)を解決し、真偽に応じてTrue/Falseを返す。
+    private string EvaluateIf(IfNodeData ifData)
     {
-        INodeActionSource source = ResolveSource(conditionData.SourceTypeName);
-        MethodInfo method = GetMethod(source.GetType(), conditionData.MethodKey);
-        if (method == null) return null;
+        EdgeData incomingEdge = _graphData.Edges
+            .Find(e => e.InputNodeGuid == ifData.Guid && e.InputPortName == "Condition");
 
-        ParameterInfo[] parameters = method.GetParameters();
-        object[] args = new object[parameters.Length];
-        for (int i = 0; i < parameters.Length; i++)
+        object value;
+        if (incomingEdge != null)
         {
-            args[i] = ResolveArgument(parameters[i], conditionData);
+            BaseNodeData sourceNode = _graphData.Nodes.Find(n => n.Guid == incomingEdge.OutputNodeGuid);
+            value = sourceNode switch
+            {
+                ActionNodeData sourceActionData => InvokeAction(sourceActionData),
+                GetMemberNodeData sourceMemberData => ResolveMember(sourceMemberData.MemberName),
+                _ => null
+            };
+        }
+        else
+        {
+            value = ConvertLiteral(ifData.GetParam("Condition"), typeof(bool));
         }
 
-        return ((ConditionParameter)method.Invoke(source, args)).ToString();
+        return value is bool boolValue && boolValue ? "True" : "False";
     }
 
     // 入力ポートに配線があれば配線元ノードをその場で実行して戻り値を使い、

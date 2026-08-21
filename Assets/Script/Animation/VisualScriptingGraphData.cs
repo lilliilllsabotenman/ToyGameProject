@@ -10,7 +10,7 @@ public class NodeParamEntry
     public string Value;
 }
 
-// ノード種別ごとのデータ(StartNodeData/ActionNodeData/ConditionNodeData)の共通基底。
+// ノード種別ごとのデータ(StartNodeData/ActionNodeData/IfNodeData)の共通基底。
 // Params は汎用のキー・値ストア。メソッド引数など、種別固有フィールドで表現しきれない
 // 追加データをここに載せる。
 [Serializable]
@@ -55,14 +55,10 @@ public class ActionNodeData : BaseNodeData
     public string SourceTypeName;
 }
 
+// 条件(Conditionポート、未配線ならParamsのリテラル値)を判定し、TrueならTrueポート、FalseならFalseポートへ進む。
 [Serializable]
-public class ConditionNodeData : BaseNodeData
+public class IfNodeData : BaseNodeData
 {
-    // GraphExecutorのonConditionへ渡されるキー(呼び出すメソッド名)
-    public string MethodKey;
-
-    // MethodKeyがどのクラス(INodeActionSource実装)のメソッドか。AssemblyQualifiedNameで保持する。
-    public string SourceTypeName;
 }
 
 [Serializable]

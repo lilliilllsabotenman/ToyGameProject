@@ -27,9 +27,7 @@ public class VisualScriptingEditorWindow : EditorWindow
     private void OnEnable()
     {
         ConstructGraphView();
-        AddToolbar();
 
-        // Ctrl+S(MacはCmd+S)で手動Save、Ctrl+Zで自前の履歴から1つ戻す
         rootVisualElement.RegisterCallback<KeyDownEvent>(evt =>
         {
             if (evt.actionKey && evt.keyCode == KeyCode.S)
@@ -40,13 +38,13 @@ public class VisualScriptingEditorWindow : EditorWindow
             else if (evt.actionKey && evt.keyCode == KeyCode.Z)
             {
                 GraphSerializer.Undo(_graphView);
-                RefreshAfterLoad();
+                _variablesPanel.Refresh();
                 evt.StopPropagation();
             }
             else if (evt.actionKey && evt.keyCode == KeyCode.Y)
             {
                 GraphSerializer.Redo(_graphView);
-                RefreshAfterLoad();
+                _variablesPanel.Refresh();
                 evt.StopPropagation();
             }
         });
@@ -54,10 +52,7 @@ public class VisualScriptingEditorWindow : EditorWindow
 
     private void ConstructGraphView()
     {
-        _graphView = new VisualScriptingGraphView
-        {
-            name = "Visual Scripting Graph"
-        };
+        _graphView = new VisualScriptingGraphView();
         _graphView.History = _history;
         // ウィンドウ全体に広げる
         _graphView.StretchToParentSize();
@@ -78,25 +73,10 @@ public class VisualScriptingEditorWindow : EditorWindow
         rootVisualElement.Add(_animationParameterPanel);
     }
 
-    private void AddToolbar()
-    {
-        var toolbar = new UnityEditor.UIElements.Toolbar();
-
-        var saveBtn = new Button(() => GraphSerializer.Save(_graphView)) { text = "Save" };
-
-        toolbar.Add(saveBtn);
-        rootVisualElement.Add(toolbar);
-    }
-
     // AnimationParameterパネルでパラメーターボタンが押されたときの入口。旧Loadボタンの責務を引き継ぐ。
     private void OnParameterSelected(AnimatorParameterInfo info)
     {
         GraphSerializer.Load(_graphView, info);
-        RefreshAfterLoad();
-    }
-
-    private void RefreshAfterLoad()
-    {
         _variablesPanel.Refresh();
     }
 

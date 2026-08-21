@@ -27,7 +27,7 @@ public static class NodeMethodOptions
         if (sourceType == null) return new List<string>();
 
         return sourceType
-            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
             .Where(m => m.GetCustomAttribute<TAttribute>() != null)
             .Select(m => m.Name)
             .ToList();
@@ -78,7 +78,18 @@ public static class NodeMethodOptions
         if (sourceType == null) return null;
 
         return sourceType
-            .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+            .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
             .FirstOrDefault(m => m.Name == methodName);
+    }
+
+    // 非staticメソッドかつIsDefault指定の無いsourceTypeは、実行時に単一インスタンスへ暗黙解決できないため、
+    // ノードにTargetポートを生やして配線されたインスタンスを実行対象にする必要がある。
+    public static bool RequiresTarget(Type sourceType, string methodName)
+    {
+        MethodInfo method = FindMethod(sourceType, methodName);
+        if (method == null || method.IsStatic) return false;
+
+        bool isDefault = sourceType.GetCustomAttribute<VisualScriptingSourceAttribute>()?.IsDefault ?? false;
+        return !isDefault;
     }
 }

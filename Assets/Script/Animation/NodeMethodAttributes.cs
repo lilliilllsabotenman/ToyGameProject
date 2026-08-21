@@ -13,12 +13,6 @@ public class VisualScriptingActionAttribute : Attribute, IDisplayNameAttribute
 }
 
 [AttributeUsage(AttributeTargets.Method)]
-public class VisualScriptingConditionAttribute : Attribute, IDisplayNameAttribute
-{
-    public string DisplayName { get; set; }
-}
-
-[AttributeUsage(AttributeTargets.Method)]
 public class VisualScriptingGetter : Attribute, IDisplayNameAttribute
 {
     public string DisplayName { get; set; }
@@ -29,4 +23,8 @@ public class VisualScriptingGetter : Attribute, IDisplayNameAttribute
 public class VisualScriptingSourceAttribute : Attribute, IDisplayNameAttribute
 {
     public string DisplayName { get; set; }
+
+    // true: NodeRunnerが事前生成する単一インスタンスを実行対象にする(Targetポート不要)。
+    // false: 非staticメソッドはノードにTargetポートが生え、配線されたインスタンスを実行対象にする。
+    public bool IsDefault { get; set; }
 }

@@ -2,7 +2,7 @@
 using UnityEngine;
 
 // このインターフェースを実装したクラスのメソッドが、
-// [VisualScriptingAction]/[VisualScriptingCondition]付きであればノード候補になる。
+// [VisualScriptingAction]/[VisualScriptingGetter]付きであればノード候補になる。
 public interface INodeActionSource
 {
     // メンバ変数(Component参照)をGetComponentで解決する対象

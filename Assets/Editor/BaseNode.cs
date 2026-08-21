@@ -63,14 +63,24 @@ public abstract class BaseNode : Node
         Port port = CreateDataPort(Direction.Input, key, type);
         row.Add(port);
 
-        TextField field = new TextField(key) { value = initialValue ?? string.Empty, isDelayed = true };
-        field.RegisterValueChangedCallback(evt => entry.Value = evt.newValue);
-        row.Add(field);
+        if (CanBeLiteral(type))
+        {
+            TextField field = new TextField(key) { value = initialValue ?? string.Empty, isDelayed = true };
+            field.RegisterValueChangedCallback(evt => entry.Value = evt.newValue);
+            row.Add(field);
+        }
 
         ParamsContainer.Add(row);
 
         RefreshExpandedState();
         RefreshPorts();
+    }
+
+    // 直打ち(TextField)で安全に値を作れる型かどうか。値型とstringはOK、Rigidbody等の参照型は配線必須にする
+    // (未配線のまま実行時にConvertLiteralへ渡るとInvalidCastExceptionでクラッシュするため)。
+    private static bool CanBeLiteral(Type type)
+    {
+        return type.IsValueType || type == typeof(string);
     }
 
     protected void AddOutput(string key, Type type)

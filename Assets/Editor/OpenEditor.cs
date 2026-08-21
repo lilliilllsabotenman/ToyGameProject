@@ -10,7 +10,7 @@ public class OpenEditor : Editor
         DrawDefaultInspector();
 
         // ボタンを1つ追加。押された瞬間だけtrueが返る
-        if (GUILayout.Button("Serialize"))
+        if (GUILayout.Button("Editing"))
         {
             // targetは今このInspectorで表示中のオブジェクト
             NodeRunner component = (NodeRunner)target;
