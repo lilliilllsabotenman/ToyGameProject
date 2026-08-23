@@ -1,5 +1,6 @@
 // Editor/AnimationParameterPanel.cs
 using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -24,6 +25,7 @@ public class AnimationParameterPanel : VisualElement
 {
     private readonly Action<AnimatorParameterInfo> _onParameterSelected;
     private Animator _animator;
+    private List<AnimatorParameterInfo> _parameters;
     private VisualElement _listContainer;
 
     public AnimationParameterPanel(Action<AnimatorParameterInfo> onParameterSelected)
@@ -50,6 +52,15 @@ public class AnimationParameterPanel : VisualElement
     public void SetAnimator(Animator animator)
     {
         _animator = animator;
+        _parameters = null;
+        Refresh();
+    }
+
+    // Animatorコンポーネントを介さず、既に解決済みのパラメータ一覧を直接渡すための入口(ParameterPrisetEditorなど)。
+    public void SetParameters(List<AnimatorParameterInfo> parameters)
+    {
+        _parameters = parameters;
+        _animator = null;
         Refresh();
     }
 
@@ -57,13 +68,27 @@ public class AnimationParameterPanel : VisualElement
     {
         _listContainer.Clear();
 
+        foreach (AnimatorParameterInfo parameter in ResolveParameters())
+        {
+            Button button = new Button(() => _onParameterSelected?.Invoke(parameter)) { text = $"{parameter.Name} : {parameter.Type}" };
+            _listContainer.Add(button);
+        }
+    }
+
+    private List<AnimatorParameterInfo> ResolveParameters()
+    {
+        if (_parameters != null) return _parameters;
+
+        List<AnimatorParameterInfo> result = new();
+
         AnimatorController controller = _animator != null ? _animator.runtimeAnimatorController as AnimatorController : null;
-        if (controller == null) return;
+        if (controller == null) return result;
 
         foreach (AnimatorControllerParameter parameter in controller.parameters)
         {
-            Button button = new Button(() => _onParameterSelected?.Invoke(new AnimatorParameterInfo(parameter.name, parameter.type))) { text = $"{parameter.name} : {parameter.type}" };
-            _listContainer.Add(button);
+            result.Add(new AnimatorParameterInfo(parameter.name, parameter.type));
         }
+
+        return result;
     }
 }

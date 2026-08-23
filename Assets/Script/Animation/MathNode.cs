@@ -83,4 +83,13 @@ public class MathNode : INodeActionSource
 
     [VisualScriptingGetter(DisplayName = "<=")]
     public static bool LessOrEqual(float a, float b) => a <= b;
+
+    [VisualScriptingGetter(DisplayName = "X成分取得")]
+    public static float GetX(Vector3 v) => v.x;
+
+    [VisualScriptingGetter(DisplayName = "Y成分取得")]
+    public static float GetY(Vector3 v) => v.y;
+
+    [VisualScriptingGetter(DisplayName = "Z成分取得")]
+    public static float GetZ(Vector3 v) => v.z;
 }

@@ -58,6 +58,9 @@ public class DefaultNode : INodeActionSource
     [VisualScriptingGetter(DisplayName = "自分の接地判定")]
     public bool IsOwnerGrounded(float rayDistance) => Physics.Raycast(Owner.transform.position, Vector3.down, rayDistance);
 
+    [VisualScriptingGetter(DisplayName = "コリジョンサイズ取得")]
+    public Vector3 GetCollisionSize() => collision.size;
+
     #endregion
 
     #region Animator
@@ -111,6 +114,9 @@ public class DefaultNode : INodeActionSource
     [VisualScriptingGetter(DisplayName = "タグで検索")]
     public GameObject FindWithTag(string tag) => GameObject.FindWithTag(tag);
 
+    [VisualScriptingGetter(DisplayName = "プレイヤーを取得")]
+    public GameObject GetOwner() => Owner;
+
     #endregion
 
     #region Time
@@ -124,19 +130,6 @@ public class DefaultNode : INodeActionSource
 
     [VisualScriptingAction(DisplayName = "ログ出力")]
     public void _Debug(string Value) => Debug.Log(Value);
-
-    #endregion
-
-    #region Convert
-
-    [VisualScriptingGetter(DisplayName = "数値→文字列")]
-    public string FloatToString(float value) => value.ToString();
-
-    [VisualScriptingGetter(DisplayName = "整数→文字列")]
-    public string IntToString(int value) => value.ToString();
-
-    [VisualScriptingGetter(DisplayName = "真偽値→文字列")]
-    public string BoolToString(bool value) => value.ToString();
 
     #endregion
 }

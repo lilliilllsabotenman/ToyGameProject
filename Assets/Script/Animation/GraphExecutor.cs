@@ -11,6 +11,7 @@ public class GraphExecutor
     private Func<IfNodeData, string> _onIf;
     private Action<SetMemberNodeData> _onSetMember;
     private Action<ForNodeData> _onFor;
+    private Dictionary<Type, Func<BaseNodeData, string>> _handlers;
 
     // メイングラフ用: StartNodeDataを自動検出して開始点にする。
     public GraphExecutor(VisualScriptingGraphData data, Action<ActionNodeData> onAction, Func<IfNodeData, string> onIf, Action<SetMemberNodeData> onSetMember, Action<ForNodeData> onFor)
@@ -41,6 +42,15 @@ public class GraphExecutor
             string key = edgeData.OutputNodeGuid + ":" + edgeData.OutputPortName;
             _edgeMap[key] = edgeData.InputNodeGuid;
         }
+
+        _handlers = new Dictionary<Type, Func<BaseNodeData, string>>
+        {
+            [typeof(StartNodeData)] = _ => "Out",
+            [typeof(ActionNodeData)] = node => { _onAction?.Invoke((ActionNodeData)node); return "Out"; },
+            [typeof(SetMemberNodeData)] = node => { _onSetMember?.Invoke((SetMemberNodeData)node); return "Out"; },
+            [typeof(IfNodeData)] = node => _onIf?.Invoke((IfNodeData)node),
+            [typeof(ForNodeData)] = node => { _onFor?.Invoke((ForNodeData)node); return "Complete"; }
+        };
     }
 
     public void Run()
@@ -65,23 +75,6 @@ public class GraphExecutor
 
     private string ExecuteNode(BaseNodeData node)
     {
-        switch (node)
-        {
-            case StartNodeData:
-                return "Out";
-            case ActionNodeData actionData:
-                _onAction?.Invoke(actionData);
-                return "Out";
-            case SetMemberNodeData setMemberData:
-                _onSetMember?.Invoke(setMemberData);
-                return "Out";
-            case IfNodeData ifData:
-                return _onIf?.Invoke(ifData);
-            case ForNodeData forData:
-                _onFor?.Invoke(forData);
-                return "Complete";
-            default:
-                return null;
-        }
+        return _handlers.TryGetValue(node.GetType(), out Func<BaseNodeData, string> handler) ? handler(node) : null;
     }
 }

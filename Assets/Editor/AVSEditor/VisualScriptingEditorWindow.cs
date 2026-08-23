@@ -1,11 +1,13 @@
         // Editor/VisualScriptingEditorWindow.cs
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public class VisualScriptingEditorWindow : EditorWindow
 {
     private VisualScriptingGraphView _graphView;
+    private Toolbar _toolbar;
     private VariablesPanel _variablesPanel;
     private AnimationParameterPanel _animationParameterPanel;
 
@@ -58,6 +60,32 @@ public class VisualScriptingEditorWindow : EditorWindow
         _graphView.StretchToParentSize();
         rootVisualElement.Add(_graphView);
 
+        _toolbar = new Toolbar();
+
+        ToolbarButton savePresetButton = new ToolbarButton { text = "プリセットとして保存" };
+        savePresetButton.clicked += () =>
+        {
+            string presetName = PresetNameDialog.Show();
+            if (!string.IsNullOrEmpty(presetName))
+            {
+                PresetSerializer.SaveAsPreset(_graphView, presetName);
+            }
+        };
+        _toolbar.Add(savePresetButton);
+
+        ToolbarButton loadPresetButton = new ToolbarButton { text = "プリセットを読み込み" };
+        loadPresetButton.clicked += () =>
+        {
+            string presetName = PresetNameDialog.Show();
+            if (!string.IsNullOrEmpty(presetName))
+            {
+                PresetSerializer.LoadPreset(_graphView, presetName);
+            }
+        };
+        _toolbar.Add(loadPresetButton);
+
+        rootVisualElement.Add(_toolbar);
+
         _variablesPanel = new VariablesPanel(_graphView);
         _variablesPanel.style.position = Position.Absolute;
         _variablesPanel.style.right = 0;
@@ -83,6 +111,7 @@ public class VisualScriptingEditorWindow : EditorWindow
     private void OnDisable()
     {
         if (_graphView != null) rootVisualElement.Remove(_graphView);
+        if (_toolbar != null) rootVisualElement.Remove(_toolbar);
         if (_variablesPanel != null) rootVisualElement.Remove(_variablesPanel);
         if (_animationParameterPanel != null) rootVisualElement.Remove(_animationParameterPanel);
     }

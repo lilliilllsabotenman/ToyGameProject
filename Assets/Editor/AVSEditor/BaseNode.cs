@@ -9,7 +9,13 @@ public class ExecFlow
 {
 }
 
-public abstract class BaseNode : Node
+// Result出力ポートを持つノード(ActionNode/GetterNode)の目印。CycleDetectorのデータ循環検出で使う。
+public interface IDataResultNode
+{
+}
+
+public abstract class 
+BaseNode : Node
 {
     public string NodeGuid;
 
@@ -63,7 +69,14 @@ public abstract class BaseNode : Node
         Port port = CreateDataPort(Direction.Input, key, type);
         row.Add(port);
 
-        if (CanBeLiteral(type))
+        if (type == typeof(bool))
+        {
+            bool.TryParse(initialValue, out bool boolValue);
+            Toggle toggle = new Toggle(key) { value = boolValue };
+            toggle.RegisterValueChangedCallback(evt => entry.Value = evt.newValue.ToString());
+            row.Add(toggle);
+        }
+        else if (CanBeLiteral(type))
         {
             TextField field = new TextField(key) { value = initialValue ?? string.Empty, isDelayed = true };
             field.RegisterValueChangedCallback(evt => entry.Value = evt.newValue);

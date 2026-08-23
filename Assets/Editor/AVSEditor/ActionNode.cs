@@ -3,7 +3,7 @@ using UnityEditor.Experimental.GraphView;
 using System;
 using System.Collections.Generic;
 
-public class ActionNode : BaseNode
+public class ActionNode : BaseNode, IDataResultNode
 {
     private string _actionKey;
 

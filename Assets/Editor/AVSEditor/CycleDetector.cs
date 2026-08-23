@@ -13,8 +13,8 @@ public static class CycleDetector
     public static bool HasNoDataCycles(IEnumerable<Edge> edges, out List<string> cycleDescriptions)
     {
         return HasNoCycles(edges, edge =>
-            (edge.output.node is ActionNode || edge.output.node is GetterNode) &&
-            (edge.input.node is ActionNode || edge.input.node is GetterNode) &&
+            edge.output.node is IDataResultNode &&
+            edge.input.node is IDataResultNode &&
             edge.output.portName == "Result", out cycleDescriptions);
     }
 

@@ -126,9 +126,20 @@ public class VariablesPanel : VisualElement
             if (member.Kind == MemberKind.Value)
             {
                 string memberName = member.Name;
-                TextField valueField = new TextField { value = member.DefaultValue ?? string.Empty };
-                valueField.RegisterValueChangedCallback(evt => SetDefaultValue(memberName, evt.newValue));
-                row.Add(valueField);
+
+                if (type == typeof(bool))
+                {
+                    bool.TryParse(member.DefaultValue, out bool boolValue);
+                    Toggle valueToggle = new Toggle { value = boolValue };
+                    valueToggle.RegisterValueChangedCallback(evt => SetDefaultValue(memberName, evt.newValue.ToString()));
+                    row.Add(valueToggle);
+                }
+                else
+                {
+                    TextField valueField = new TextField { value = member.DefaultValue ?? string.Empty };
+                    valueField.RegisterValueChangedCallback(evt => SetDefaultValue(memberName, evt.newValue));
+                    row.Add(valueField);
+                }
             }
 
             string removeName = member.Name;
@@ -138,5 +149,4 @@ public class VariablesPanel : VisualElement
             _listContainer.Add(row);
         }
     }
-
 }

@@ -108,16 +108,62 @@ public class MemberVariableData
     public string DefaultValue; // Kind == Value の場合のみ使用
 }
 
+// プリセット一覧表示など、読み取り専用で見せたい相手に渡すための契約。
+public interface IPresetDisplayInfo
+{
+    string GetDisplayName();
+    Color GetColor();
+}
+
+// AVSエディターなど、書き込みを許可したい相手にだけ渡すための契約。
+public interface IPresetDisplayInfoWriter
+{
+    void SetDisplayName(string displayName);
+    void SetColor(Color color);
+}
+
 [Serializable]
-public class VisualScriptingGraphData
+public class VisualScriptingGraphData : IPresetDisplayInfo, IPresetDisplayInfoWriter
 {
     public string Name;
     public AnimatorControllerParameterType ParameterType;
+
+    [SerializeField]
+    private string _displayName;
+    [SerializeField]
+    private Color _previewColor;
 
     [SerializeReference]
     public List<BaseNodeData> Nodes = new();
     public List<EdgeData> Edges = new();
     public List<MemberVariableData> Members = new();
+
+    //GetterとSetter機能をインターフェース経由以外で触らせないようにするための特殊実装↓
+    string IPresetDisplayInfo.GetDisplayName() => _displayName;
+    Color IPresetDisplayInfo.GetColor() => _previewColor;
+    void IPresetDisplayInfoWriter.SetDisplayName(string displayName) => _displayName = displayName;
+    void IPresetDisplayInfoWriter.SetColor(Color color) => _previewColor = color;
+
+    // Action/Conditionノードでキー(MethodKey)が空のまま保存された場合に検出する。
+    // 実行時のDictionaryキー不一致(未登録キー)はここでは検出できない(実行側の登録内容をこの型は知らないため)。
+    public bool HasNoMissingParameters(out List<string> missing)
+    {
+        missing = new List<string>();
+        foreach (BaseNodeData nodeData in Nodes)
+        {
+            bool isMissing = nodeData switch
+            {
+                ActionNodeData actionData => string.IsNullOrWhiteSpace(actionData.MethodKey),
+                _ => false
+            };
+            if (isMissing)
+            {
+                missing.Add(nodeData.GetType().Name + " (" + nodeData.Guid.Substring(0, 8) + ")");
+            }
+        }
+
+        return missing.Count == 0;
+    }
 }
 
 public class VisualScriptingGraphDataBase : ScriptableObject

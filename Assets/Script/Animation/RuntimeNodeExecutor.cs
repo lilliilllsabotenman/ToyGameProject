@@ -80,17 +80,33 @@ public class RuntimeNodeExecutor
             return created;
         }
 
-        EdgeData incomingEdge = _graphData.Edges
-            .Find(e => e.InputNodeGuid == actionData.Guid && e.InputPortName == "Target");
-        if (incomingEdge == null) return null;
+        TryResolveNodeValue(actionData.Guid, "Target", out object source);
+        return source;
+    }
 
-        BaseNodeData sourceNode = _graphData.Nodes.Find(n => n.Guid == incomingEdge.OutputNodeGuid);
-        return sourceNode switch
+    // 入力ポート(nodeGuid, portName)に配線があれば、配線元ノード(Action/GetMember)を辿って値を解決する。
+    // 配線が無ければfalseを返すので、呼び出し側はリテラル値へのフォールバックを行える。
+    private bool TryResolveNodeValue(string nodeGuid, string portName, out object value)
+    {
+        EdgeData incomingEdge = _graphData.Edges
+            .Find(e => e.InputNodeGuid == nodeGuid && e.InputPortName == portName);
+
+        if (incomingEdge != null)
         {
-            ActionNodeData sourceActionData => InvokeAction(sourceActionData),
-            GetMemberNodeData sourceMemberData => ResolveMember(sourceMemberData.MemberName),
-            _ => null
-        };
+            BaseNodeData sourceNode = _graphData.Nodes.Find(n => n.Guid == incomingEdge.OutputNodeGuid);
+            switch (sourceNode)
+            {
+                case ActionNodeData sourceActionData:
+                    value = InvokeAction(sourceActionData);
+                    return true;
+                case GetMemberNodeData sourceMemberData:
+                    value = ResolveMember(sourceMemberData.MemberName);
+                    return true;
+            }
+        }
+
+        value = null;
+        return false;
     }
 
     private MethodInfo GetMethod(Type sourceType, string methodName)
@@ -163,19 +179,19 @@ public class RuntimeNodeExecutor
 
     private void ExecuteSetMember(SetMemberNodeData setMemberData)
     {
-        EdgeData incomingEdge = _graphData.Edges
-            .Find(e => e.InputNodeGuid == setMemberData.Guid && e.InputPortName == "Value");
-        if (incomingEdge == null) return;
-
-        BaseNodeData sourceNode = _graphData.Nodes.Find(n => n.Guid == incomingEdge.OutputNodeGuid);
-        object value = sourceNode switch
+        if (!TryResolveNodeValue(setMemberData.Guid, "Value", out object value))
         {
-            ActionNodeData sourceActionData => InvokeAction(sourceActionData),
-            GetMemberNodeData sourceMemberData => ResolveMember(sourceMemberData.MemberName),
-            _ => null
-        };
+            Type memberType = ResolveMemberType(setMemberData.MemberName);
+            value = ConvertLiteral(setMemberData.GetParam("Value"), memberType);
+        }
 
         SetMember(setMemberData.MemberName, value);
+    }
+
+    private Type ResolveMemberType(string name)
+    {
+        MemberVariableData member = _graphData.Members.Find(m => m.Name == name);
+        return string.IsNullOrEmpty(member?.TypeName) ? null : Type.GetType(member.TypeName);
     }
 
     // Countポート(未配線ならParamsのリテラル値)を解決し、その回数だけ本体を実行する。
@@ -196,21 +212,7 @@ public class RuntimeNodeExecutor
 
     private int ResolveForCount(ForNodeData forData)
     {
-        EdgeData incomingEdge = _graphData.Edges
-            .Find(e => e.InputNodeGuid == forData.Guid && e.InputPortName == "Count");
-
-        object value;
-        if (incomingEdge != null)
-        {
-            BaseNodeData sourceNode = _graphData.Nodes.Find(n => n.Guid == incomingEdge.OutputNodeGuid);
-            value = sourceNode switch
-            {
-                ActionNodeData sourceActionData => InvokeAction(sourceActionData),
-                GetMemberNodeData sourceMemberData => ResolveMember(sourceMemberData.MemberName),
-                _ => null
-            };
-        }
-        else
+        if (!TryResolveNodeValue(forData.Guid, "Count", out object value))
         {
             value = ConvertLiteral(forData.GetParam("Count"), typeof(int));
         }
@@ -264,21 +266,7 @@ public class RuntimeNodeExecutor
     // Conditionポート(未配線ならParamsのリテラル値)を解決し、真偽に応じてTrue/Falseを返す。
     private string EvaluateIf(IfNodeData ifData)
     {
-        EdgeData incomingEdge = _graphData.Edges
-            .Find(e => e.InputNodeGuid == ifData.Guid && e.InputPortName == "Condition");
-
-        object value;
-        if (incomingEdge != null)
-        {
-            BaseNodeData sourceNode = _graphData.Nodes.Find(n => n.Guid == incomingEdge.OutputNodeGuid);
-            value = sourceNode switch
-            {
-                ActionNodeData sourceActionData => InvokeAction(sourceActionData),
-                GetMemberNodeData sourceMemberData => ResolveMember(sourceMemberData.MemberName),
-                _ => null
-            };
-        }
-        else
+        if (!TryResolveNodeValue(ifData.Guid, "Condition", out object value))
         {
             value = ConvertLiteral(ifData.GetParam("Condition"), typeof(bool));
         }
@@ -290,20 +278,9 @@ public class RuntimeNodeExecutor
     // 無ければParamsの直打ち値を使う。
     private object ResolveArgument(ParameterInfo parameter, BaseNodeData nodeData)
     {
-        EdgeData incomingEdge = _graphData.Edges
-            .Find(e => e.InputNodeGuid == nodeData.Guid && e.InputPortName == parameter.Name);
-
-        if (incomingEdge != null)
+        if (TryResolveNodeValue(nodeData.Guid, parameter.Name, out object value))
         {
-            BaseNodeData sourceNode = _graphData.Nodes.Find(n => n.Guid == incomingEdge.OutputNodeGuid);
-            if (sourceNode is ActionNodeData sourceActionData)
-            {
-                return InvokeAction(sourceActionData);
-            }
-            if (sourceNode is GetMemberNodeData sourceMemberData)
-            {
-                return ResolveMember(sourceMemberData.MemberName);
-            }
+            return value;
         }
 
         return ConvertParam(nodeData.Params, parameter);
