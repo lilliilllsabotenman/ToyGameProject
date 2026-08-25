@@ -66,9 +66,17 @@ public class VariablesPanel : VisualElement
         menu.ShowAsContext();
     }
 
+    // CurrentDataBaseをSetDirty+SaveAssetsするだけの小さいヘルパー。
+    private void Persist()
+    {
+        if (_graphView.CurrentDataBase == null) return;
+        EditorUtility.SetDirty(_graphView.CurrentDataBase);
+        AssetDatabase.SaveAssets();
+    }
+
     private void AddMember(Type type, MemberKind kind)
     {
-        VisualScriptingGraphData data = GraphSerializer.GetCurrent(_graphView);
+        VisualScriptingGraphData data = _graphView.CurrentData;
         if (data == null) return;
 
         string baseName = type.Name;
@@ -81,36 +89,36 @@ public class VariablesPanel : VisualElement
         }
 
         data.Members.Add(new MemberVariableData { Name = name, Kind = kind, TypeName = type.AssemblyQualifiedName });
-        GraphSerializer.PersistCurrent();
+        Persist();
         Refresh();
     }
 
     private void RemoveMember(string memberName)
     {
-        VisualScriptingGraphData data = GraphSerializer.GetCurrent(_graphView);
+        VisualScriptingGraphData data = _graphView.CurrentData;
         if (data == null) return;
 
         data.Members.RemoveAll(m => m.Name == memberName);
-        GraphSerializer.PersistCurrent();
+        Persist();
         Refresh();
     }
 
     private void SetDefaultValue(string memberName, string value)
     {
-        VisualScriptingGraphData data = GraphSerializer.GetCurrent(_graphView);
+        VisualScriptingGraphData data = _graphView.CurrentData;
         if (data == null) return;
 
         MemberVariableData member = data.Members.Find(m => m.Name == memberName);
         if (member == null) return;
 
         member.DefaultValue = value;
-        GraphSerializer.PersistCurrent();
+        Persist();
     }
 
     public void Refresh()
     {
         _listContainer.Clear();
-        VisualScriptingGraphData data = GraphSerializer.GetCurrent(_graphView);
+        VisualScriptingGraphData data = _graphView.CurrentData;
         if (data == null) return;
 
         foreach (MemberVariableData member in data.Members)

@@ -1,4 +1,5 @@
 // Editor/VisualScriptingGraphView.cs
+using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -10,14 +11,16 @@ public class VisualScriptingGraphView : GraphView
 {
     public const string GraphDataPath = "Assets/Resources/AnimationTransitionData/GraphData.asset";
 
-    // 今このGraphViewが表示・編集しているパラメーター名。GraphSerializerはこれを読んで保存/読込対象を決める。
-    public string CurrentParameterName { get; set; }
+    // 今このGraphViewが編集している対象そのもの(名前検索を介さない直接参照)。
+    // CurrentDataBaseは保存(SetDirty/SaveAssets)対象のアセット、CurrentDataはその中の1エントリ。
+    public VisualScriptingGraphDataBase CurrentDataBase { get; set; }
+    public VisualScriptingGraphData CurrentData { get; set; }
 
-    // GraphSerializer.Loadが再構築中はtrue。この間はAutoSaveを走らせない(再構築途中の不完全な状態を保存してしまうのを防ぐ)。
+    // Data(Data⇔Viewの再構築)が進行中はtrue。この間はAutoSaveを走らせない(再構築途中の不完全な状態を保存してしまうのを防ぐ)。
     public bool IsLoading { get; set; }
 
-    // 編集履歴。VisualScriptingEditorWindowが保持するインスタンスをここへ注入してもらう。  
-    public EditHistoryData History { get; set; }    
+    // 編集履歴。VisualScriptingEditorWindowが保持するインスタンスをここへ注入してもらう。
+    public EditHistoryData History { get; set; }
 
     public VisualScriptingGraphView()
     {
@@ -44,10 +47,78 @@ public class VisualScriptingGraphView : GraphView
         return change;
     }
 
-    private void TriggerAutoSave()
+    // CurrentData/CurrentDataBaseが設定されていれば、検証→View内容をCurrentDataへ反映→アセット保存→履歴追加、まで行う。
+    // 未設定(何も編集対象を持っていない)なら何もしない。
+    public void TriggerAutoSave()
     {
         if (IsLoading) return;
-        GraphSerializer.Save(this);
+        if (CurrentData == null || CurrentDataBase == null) return;
+
+        // 条件を満たさない場合だけ警告を出す。呼び出し側はok自体をif判定に使う(中断するかは呼び出し側が決める)。
+        static bool CheckOrWarn(bool ok, string message)
+        {
+            if (!ok) Debug.LogWarning(message);
+            return ok;
+        }
+
+        List<Edge> edgeList = edges.ToList();
+
+        if (!CheckOrWarn(PortCompatibility.AreAllCompatible(edgeList, out List<string> incompatibleEdges),
+            "型が一致しないエッジがあるため保存を中断しました: " + string.Join(", ", incompatibleEdges))) return;
+
+        if (!CheckOrWarn(CycleDetector.HasNoDataCycles(edgeList, out List<string> dataCycles),
+            "循環参照(データ配線)があるため保存を中断しました(実行時にクラッシュする可能性があります): " + string.Join(", ", dataCycles))) return;
+
+        if (!CheckOrWarn(CycleDetector.HasNoExecCycles(edgeList, out List<string> execCycles),
+            "循環参照(Exec配線)があるため保存を中断しました(実行時に無限ループでフリーズする可能性があります): " + string.Join(", ", execCycles))) return;
+
+        VisualScriptingGraphData converted = GraphConverter.ToData(this, CurrentData.Name);
+        CurrentData.Nodes = converted.Nodes;
+        CurrentData.Edges = converted.Edges;
+
+        EditorUtility.SetDirty(CurrentDataBase);
+        AssetDatabase.SaveAssets();
+
+        CheckOrWarn(CurrentData.HasNoMissingParameters(out List<string> missing), "キー未入力のノードがあります: " + string.Join(", ", missing));
+
+        History?.AddHistory(CurrentData.Name, BuildSnapshot(CurrentData));
+    }
+
+    // 履歴を1つ遡って復元する。これ以上遡れなければ何もしない。
+    public void Undo()
+    {
+        if (CurrentData == null || History == null) return;
+        if (!History.Undo(CurrentData.Name, CurrentData)) return;
+
+        EditorUtility.SetDirty(CurrentDataBase);
+        AssetDatabase.SaveAssets();
+
+        GraphConverter.RebuildView(this, CurrentData);
+    }
+
+    // Undoで退避した内容を1つ戻す。退避が無ければ何もしない。
+    public void Redo()
+    {
+        if (CurrentData == null || History == null) return;
+        if (!History.Redo(CurrentData.Name, CurrentData)) return;
+
+        EditorUtility.SetDirty(CurrentDataBase);
+        AssetDatabase.SaveAssets();
+
+        GraphConverter.RebuildView(this, CurrentData);
+    }
+
+    // Nodes/Edges中身は毎回新規生成されたオブジェクトなので、入れ物(List)だけ別に包めば安全なスナップショットになる。
+    private static VisualScriptingGraphData BuildSnapshot(VisualScriptingGraphData data)
+    {
+        return new()
+        {
+            Name = data.Name,
+            ParameterType = data.ParameterType,
+            Nodes = new List<BaseNodeData>(data.Nodes),
+            Edges = new List<EdgeData>(data.Edges),
+            Members = new List<MemberVariableData>(data.Members)
+        };
     }
 
     // 接続ルール：OutputからInputにのみ繋げる
@@ -57,10 +128,10 @@ public class VisualScriptingGraphView : GraphView
             .Where(p => p.direction != startPort.direction && p.node != startPort.node && PortCompatibility.IsCompatible(startPort, p))
             .ToList();
     }
-    
+
     private void PopulateContextualMenu(ContextualMenuPopulateEvent evt)
     {
-        VisualScriptingGraphData graphData = GraphSerializer.GetCurrent(this);
+        VisualScriptingGraphData graphData = CurrentData;
 
         foreach (Type sourceType in NodeMethodOptions.GetDerivedTypes<INodeActionSource>())
         {

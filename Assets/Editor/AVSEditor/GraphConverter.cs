@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 // GraphView上のノード/エッジ ⇔ VisualScriptingGraphData の純粋な変換だけを担う。
-// どこに保存するか・履歴・検証はGraphSerializerの責務で、こちらは一切関知しない。
+// どこに保存するか・履歴・検証はVisualScriptingGraphViewの責務で、こちらは一切関知しない。
 public static class GraphConverter
 {
     // View(BaseNode)→保存データ(BaseNodeData)への変換テーブル。ActionNode/GetterNodeはどちらもActionNodeDataへ変換される。

@@ -27,10 +27,8 @@ public class NodeRunner : MonoBehaviour
         }
         
         DefaultNode target = new DefaultNode(Owner);
-        foreach (AnimatorControllerParameter parameter in animator.parameters)
+        foreach (VisualScriptingGraphData data in GraphData.data)
         {
-            VisualScriptingGraphData data = GraphData.GetData(parameter.name);
-            if (data == null) continue;
             executors.Add(new RuntimeNodeExecutor(data, target));
         }
     }

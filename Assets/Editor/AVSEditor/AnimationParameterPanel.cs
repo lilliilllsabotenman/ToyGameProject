@@ -23,10 +23,13 @@ public readonly struct AnimatorParameterInfo
 // ボタンを押すと、そのパラメーター情報でonParameterSelectedを呼ぶ(実際に何をするかは呼び出し側が決める)。
 public class AnimationParameterPanel : VisualElement
 {
+    private static readonly Color SelectedColor = new Color(0.6f, 0.85f, 1f);
+
     private readonly Action<AnimatorParameterInfo> _onParameterSelected;
     private Animator _animator;
     private List<AnimatorParameterInfo> _parameters;
     private VisualElement _listContainer;
+    private AnimatorParameterInfo? _selected;
 
     public AnimationParameterPanel(Action<AnimatorParameterInfo> onParameterSelected)
     {
@@ -53,12 +56,16 @@ public class AnimationParameterPanel : VisualElement
     {
         _animator = animator;
         _parameters = null;
+        _selected = null;
         Refresh();
     }
 
-    // Animatorコンポーネントを介さず、既に解決済みのパラメータ一覧を直接渡すための入口(ParameterPrisetEditorなど)。
+    // Animatorコンポーネントを介さず、既に解決済みのパラメータ一覧を直接渡すための入口(ParameterPresetEditorなど)。
+    // 同じ一覧が再度渡されただけ(フォーカス復帰など)なら選択状態は保持し、別の一覧に切り替わったときだけ選択を解除する。
     public void SetParameters(List<AnimatorParameterInfo> parameters)
     {
+        if (_parameters != parameters) _selected = null;
+
         _parameters = parameters;
         _animator = null;
         Refresh();
@@ -70,7 +77,19 @@ public class AnimationParameterPanel : VisualElement
 
         foreach (AnimatorParameterInfo parameter in ResolveParameters())
         {
-            Button button = new Button(() => _onParameterSelected?.Invoke(parameter)) { text = $"{parameter.Name} : {parameter.Type}" };
+            Button button = new Button(() =>
+            {
+                _selected = parameter;
+                _onParameterSelected?.Invoke(parameter);
+                Refresh();
+            })
+            { text = $"{parameter.Name} : {parameter.Type}" };
+
+            if (_selected != null && _selected.Value.Equals(parameter))
+            {
+                button.style.backgroundColor = SelectedColor;
+            }
+
             _listContainer.Add(button);
         }
     }

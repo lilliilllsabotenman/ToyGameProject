@@ -1,6 +1,7 @@
 // Script/Animation/VisualScriptingGraphData.cs
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [Serializable]
@@ -37,6 +38,15 @@ public abstract class BaseNodeData
     {
         NodeParamEntry entry = Params.Find(p => p.Key == key);
         return entry?.Value;
+    }
+
+    // MemberwiseClone()は実行時の具象型ごとコピーされるため、Params以外は非virtualな一括対応で全サブクラスに使える。
+    // Params(参照型リスト)だけは中身までコピーして独立させる。
+    public BaseNodeData Clone()
+    {
+        BaseNodeData clone = (BaseNodeData)MemberwiseClone();
+        clone.Params = Params.Select(p => new NodeParamEntry { Key = p.Key, Value = p.Value }).ToList();
+        return clone;
     }
 }
 
@@ -111,15 +121,28 @@ public class MemberVariableData
 // プリセット一覧表示など、読み取り専用で見せたい相手に渡すための契約。
 public interface IPresetDisplayInfo
 {
-    string GetDisplayName();
-    Color GetColor();
+    PresetDisplayInfo GetDisplayInfo();
 }
 
 // AVSエディターなど、書き込みを許可したい相手にだけ渡すための契約。
 public interface IPresetDisplayInfoWriter
 {
-    void SetDisplayName(string displayName);
-    void SetColor(Color color);
+    void SetDisplayInfo(PresetDisplayInfo displayInfo);
+}
+
+// DisplayName+Colorをまとめて受け渡すための入れ物(PresetNameDialog→PresetSerializerなど)。
+// VisualScriptingGraphDataのシリアライズフィールドとしても使うため、readonlyにはしない(Unityはreadonlyフィールドをシリアライズできない)。
+[Serializable]
+public struct PresetDisplayInfo
+{
+    public string DisplayName;
+    public Color Color;
+
+    public PresetDisplayInfo(string displayName, Color color)
+    {
+        DisplayName = displayName;
+        Color = color;
+    }
 }
 
 [Serializable]
@@ -128,10 +151,12 @@ public class VisualScriptingGraphData : IPresetDisplayInfo, IPresetDisplayInfoWr
     public string Name;
     public AnimatorControllerParameterType ParameterType;
 
+    // プリセットテンプレート自身のユニークな識別子。Nameは適用先パラメータ名を表すだけで一意ではないため、
+    // 「このプリセットが今適用されているか」の判定にはこちらを使う。
+    public string PresetId;
+
     [SerializeField]
-    private string _displayName;
-    [SerializeField]
-    private Color _previewColor;
+    private PresetDisplayInfo _displayInfo;
 
     [SerializeReference]
     public List<BaseNodeData> Nodes = new();
@@ -139,10 +164,8 @@ public class VisualScriptingGraphData : IPresetDisplayInfo, IPresetDisplayInfoWr
     public List<MemberVariableData> Members = new();
 
     //GetterとSetter機能をインターフェース経由以外で触らせないようにするための特殊実装↓
-    string IPresetDisplayInfo.GetDisplayName() => _displayName;
-    Color IPresetDisplayInfo.GetColor() => _previewColor;
-    void IPresetDisplayInfoWriter.SetDisplayName(string displayName) => _displayName = displayName;
-    void IPresetDisplayInfoWriter.SetColor(Color color) => _previewColor = color;
+    PresetDisplayInfo IPresetDisplayInfo.GetDisplayInfo() => _displayInfo;
+    void IPresetDisplayInfoWriter.SetDisplayInfo(PresetDisplayInfo displayInfo) => _displayInfo = displayInfo;
 
     // Action/Conditionノードでキー(MethodKey)が空のまま保存された場合に検出する。
     // 実行時のDictionaryキー不一致(未登録キー)はここでは検出できない(実行側の登録内容をこの型は知らないため)。
@@ -164,12 +187,31 @@ public class VisualScriptingGraphData : IPresetDisplayInfo, IPresetDisplayInfoWr
 
         return missing.Count == 0;
     }
-}
 
-public class VisualScriptingGraphDataBase : ScriptableObject
-{
-    public List<VisualScriptingGraphData> data = new();
-
-    public VisualScriptingGraphData GetData(string name)
-        => data.Find(d => d.Name == name);
+    // プリセットのテンプレートを壊さず使うための独立コピー。Nodes/Edges/Membersの中身までコピーする。
+    public VisualScriptingGraphData Clone()
+    {
+        return new VisualScriptingGraphData
+        {
+            Name = Name,
+            ParameterType = ParameterType,
+            PresetId = PresetId,
+            _displayInfo = _displayInfo,
+            Nodes = Nodes.Select(n => n.Clone()).ToList(),
+            Edges = Edges.Select(e => new EdgeData
+            {
+                OutputNodeGuid = e.OutputNodeGuid,
+                OutputPortName = e.OutputPortName,
+                InputNodeGuid = e.InputNodeGuid,
+                InputPortName = e.InputPortName
+            }).ToList(),
+            Members = Members.Select(m => new MemberVariableData
+            {
+                Name = m.Name,
+                Kind = m.Kind,
+                TypeName = m.TypeName,
+                DefaultValue = m.DefaultValue
+            }).ToList()
+        };
+    }
 }

@@ -52,7 +52,7 @@ public static class AnimatorStateTransitionEditor
 
         if(GUILayout.Button("プログラマーに楽をさせる"))
         {
-            ParameterPrisetEditor window = ParameterPrisetEditor.Open();
+            ParameterPresetEditor window = ParameterPresetEditor.Open();
             window.Initialized(new List<AnimatorParameterInfo>(parameterInfos));
         }
     }
